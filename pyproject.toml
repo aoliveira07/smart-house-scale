@@ -4,13 +4,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "smart-house-scale"
-version = "0.1.2"
+version = "0.1.3"
 description = "Local Xiaomi BLE scale integration and Smart House central API module"
 requires-python = ">=3.12"
 dependencies = [
   "fastapi>=0.115,<1",
   "asyncpg>=0.29,<1",
   "alembic>=1.13,<2",
+  "sqlalchemy>=2,<3",
+  "psycopg[binary]>=3,<4",
 ]
 
 [tool.pytest.ini_options]

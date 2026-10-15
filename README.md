@@ -7,11 +7,27 @@ House.
 
 ## Estado da entrega
 
-Implementação local pronta para testes automatizados e revisão de integração.
-A homologação física ainda depende de confirmar o servidor central correto e a
-MAC real da balança. Durante esta execução, `192.168.0.201` respondeu como
-controlador UniFi e não como o servidor PostgreSQL/FastAPI descrito no handoff;
-nenhuma migration ou alteração remota foi aplicada.
+O servidor central foi confirmado e o módulo foi integrado ao FastAPI existente
+em `192.168.0.201`. A migration `c4a9f1e2b7d0` é encadeada após o head
+`b62d4f9a7e31`; o PostgreSQL oficial continua sendo o único histórico.
+
+O FastAPI escuta internamente em `127.0.0.1:8000` e o Nginx expõe a API LAN em
+`http://192.168.0.201/api`. A integração Home Assistant usa essa URL e o token
+dedicado configurado no fluxo da integração.
+
+## Configuração inicial
+
+1. No Home Assistant, instale a integração via HACS ou copie o diretório
+   `custom_components/smart_house_scale`.
+2. Adicione a integração, informe o MAC normalizado da balança e use
+   `http://192.168.0.201` como URL da API.
+3. Informe o token Bearer dedicado fornecido pelo administrador. O token não é
+   publicado neste repositório.
+4. Cadastre moradores pela interface e informe altura, peso inicial e, quando
+   necessário para o metabolismo basal, sexo biológico.
+
+O Home Assistant não deve apontar para a porta `8000` nem acessar o PostgreSQL.
+O acesso LAN usa o proxy HTTP em `/api`.
 
 ## Arquitetura
 
@@ -33,7 +49,7 @@ frame temporário, espera a indicação de estabilidade e cria um único
    **Integration**.
 2. Instale `Smart House Scale` e reinicie o Home Assistant.
 3. Em **Configurações → Dispositivos e serviços → Adicionar integração**, informe
-   nome, MAC, URL da API e, se adotado pelo servidor, o token dedicado.
+   nome, MAC, URL da API e o token Bearer dedicado.
 4. Confirme que o Bluetooth nativo ou um Bluetooth Proxy ESPHome está operacional.
 
 ### Manual
@@ -46,15 +62,14 @@ usuários no HA.
 
 ## Backend central
 
-1. Verifique no servidor correto a árvore FastAPI/Alembic e o head atual.
-2. Copie o router `backend/app/routes.py` para o pacote do servidor ou inclua-o
-   via `app.include_router(router)`.
-3. Copie a migration para o diretório Alembic existente e preencha `down_revision`
-   com o head real, sem editar migrations já aplicadas.
-4. Configure a URL existente em `SMART_HOUSE_DATABASE_URL`/`DATABASE_URL` e instale
-   `backend/requirements.txt` no ambiente do servidor. Não use Docker no servidor.
-5. Publique a UI pelo mesmo FastAPI/Ingress ou pelo reverse proxy LAN já usado
-   pelos apps Smart House.
+O overlay instalado no servidor está documentado em
+[`backend/central_api/README.md`](backend/central_api/README.md). Ele adiciona
+os endpoints ao processo `smart-house-api.service`, reaproveita a autenticação
+Bearer existente e usa o schema PostgreSQL `health`.
+
+O Home Assistant nunca acessa o PostgreSQL diretamente. A URL configurada na
+integração é `http://192.168.0.201`; o prefixo `/api` é acrescentado pelos
+endpoints do cliente.
 
 ## API
 
@@ -66,6 +81,9 @@ usuários no HA.
 - `GET /api/v1/scale-measurements/pending`
 - `POST /api/v1/scale-measurements/{id}/assign|discard|reassign`
 - `GET /api/v1/scale/health`
+
+As rotas de leitura usam `scale:read`; escrita, incluindo ingestão de medições,
+usa `scale:write`. O cliente provisionado para o Home Assistant possui ambos.
 
 ## Métricas
 
@@ -96,10 +114,9 @@ BLE paralelo. Os créditos e avisos MIT das referências estão em
 
 ## Limitações conhecidas
 
-- O IP informado no handoff não apontou para o servidor central durante a
-  execução; deployment da migration e smoke test contra PostgreSQL real aguardam
-  o endereço/credencial corretos.
-- A API não assume uma política de autenticação própria: em produção deve ser
-  montada atrás da autenticação existente do Smart House ou de token dedicado.
-- O modelo efetivo da balança e o layout de seus anúncios precisam ser confirmados
-  com captura física; V1/V2 Xiaomi conhecidos estão cobertos.
+- O modelo efetivo da balança e o layout de seus anúncios precisam ser
+  confirmados com captura física; V1/V2 Xiaomi conhecidos estão cobertos.
+- A interface administrativa do Scale continua no pacote web do projeto; a
+  homologação deve confirmar a publicação dela no frontend Smart House.
+- A balança atual pode não fornecer impedância; campos de bioimpedância ficam
+  `NULL` até existirem dados reais.

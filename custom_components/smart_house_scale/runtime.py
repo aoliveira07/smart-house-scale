@@ -100,6 +100,7 @@ class ScaleRuntime:
             "session_last_seen_at": self.sessions.last_finalized.last_seen_at.isoformat() if self.sessions.last_finalized else None,
             "advertisement_count": self.sessions.last_finalized.advertisement_count if self.sessions.last_finalized else 1,
             "mac_address": reading.mac_address,
+            "device_name": self.device_name,
             "measured_at": reading.measured_at.isoformat(),
             "received_at": datetime.now(UTC).isoformat(),
             "weight_kg": reading.weight_kg,

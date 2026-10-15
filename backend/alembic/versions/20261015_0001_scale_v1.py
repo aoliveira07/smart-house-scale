@@ -7,9 +7,9 @@ metadata or an independent database.
 
 from alembic import op
 
-revision = "20261015_0001"
-down_revision = None  # Set to the current Smart House head when integrating.
-branch_labels = ("smart_house_scale",)
+revision = "c4a9f1e2b7d0"
+down_revision = "b62d4f9a7e31"
+branch_labels = None
 depends_on = None
 
 

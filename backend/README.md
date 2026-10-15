@@ -1,15 +1,15 @@
 # Smart House Scale backend
 
-O backend expõe o router `app.routes.router` para ser incluído no FastAPI central
-existente. O entry point `app.main:app` também permite executar a API isoladamente
-durante desenvolvimento, sempre usando PostgreSQL via `SMART_HOUSE_DATABASE_URL`
-ou `DATABASE_URL`.
+Em produção, o Scale é um módulo do FastAPI central existente. Use os arquivos
+em [`central_api/`](central_api/README.md), reaproveitando o SQLAlchemy,
+Alembic, autenticação Bearer e PostgreSQL já instalados em
+`192.168.0.201`. Não habilite um segundo serviço systemd nem crie um banco
+paralelo.
 
-```python
-from backend.app.routes import router as scale_router
-app.include_router(scale_router)
-```
+O pacote `app/` continua disponível para testes unitários e desenvolvimento
+isolado; a instalação oficial usa o overlay central.
 
-O servidor central deve fornecer a dependência de autenticação já usada pelos
-demais apps. Para o modo standalone, configure `SMART_HOUSE_SCALE_API_TOKEN` no
-proxy/API conforme a política local; nenhum token deve entrar no repositório.
+O Home Assistant envia para `http://192.168.0.201/api` e fornece o token
+dedicado na configuração da integração. O token é armazenado somente na
+configuração segura do Home Assistant e no hash da tabela `core.api_keys`; ele
+não deve entrar no GitHub, em logs ou neste repositório.

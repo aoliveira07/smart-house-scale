@@ -1,8 +1,10 @@
 # Checklist de homologação física — SH-SCALE V1
 
-- [ ] Confirmar o host correto do PostgreSQL/FastAPI; `192.168.0.201` está divergente nesta entrega.
-- [ ] Aplicar a migration no Alembic central com o `down_revision` real.
-- [ ] Configurar autenticação LAN/token sem gravar segredo no Git.
+- [x] Confirmar o host correto do PostgreSQL/FastAPI: `192.168.0.201`.
+- [x] Aplicar a migration no Alembic central (`b62d4f9a7e31 -> c4a9f1e2b7d0`).
+- [x] Configurar cliente Bearer dedicado `home-assistant-scale` sem gravar o
+      token no Git.
+- [x] Confirmar FastAPI central ativo e proxy LAN `http://192.168.0.201/api`.
 - [ ] Instalar a integração e confirmar Bluetooth nativo/Proxy ESPHome.
 - [ ] Identificar e cadastrar a MAC normalizada.
 - [ ] Cadastrar usuários, altura e peso inicial pela UI.

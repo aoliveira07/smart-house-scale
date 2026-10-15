@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.3 — API central Smart House
+
+- Integra o Scale ao FastAPI central existente, sem serviço ou banco paralelo.
+- Adiciona migration Alembic encadeada no head `b62d4f9a7e31`.
+- Adiciona usuários, balanças, sessões, medições, atribuição automática,
+  pendências, reatribuição, métricas, saúde e auditoria mínima.
+- Protege a API com os scopes `scale:read` e `scale:write`.
+- Configuração HA exige token Bearer e envia o nome do dispositivo para o
+  cadastro automático da balança.
+
 ## 0.1.2 — IDs de entidades
 
 - Define `suggested_object_id` estável para as entidades por usuário e por dispositivo.

@@ -36,7 +36,7 @@ class SmartHouseScaleConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 vol.Required(CONF_DEVICE_NAME, default="Smart House Scale"): str,
                 vol.Required(CONF_MAC_ADDRESS): str,
                 vol.Required(CONF_API_URL, default=DEFAULT_API_URL): str,
-                vol.Optional(CONF_API_TOKEN, default=""): str,
+                vol.Required(CONF_API_TOKEN): vol.All(str, vol.Length(min=1)),
                 vol.Optional(CONF_SESSION_WINDOW, default=DEFAULT_SESSION_WINDOW): vol.All(int, vol.Range(min=5, max=300)),
             }
         )
@@ -55,7 +55,7 @@ class SmartHouseScaleOptionsFlow(config_entries.OptionsFlow):
         schema = vol.Schema(
             {
                 vol.Required(CONF_API_URL, default=entry.data[CONF_API_URL]): str,
-                vol.Optional(CONF_API_TOKEN, default=entry.data.get(CONF_API_TOKEN, "")): str,
+                vol.Required(CONF_API_TOKEN, default=entry.options.get(CONF_API_TOKEN, entry.data.get(CONF_API_TOKEN, ""))): vol.All(str, vol.Length(min=1)),
                 vol.Optional(CONF_SESSION_WINDOW, default=entry.options.get(CONF_SESSION_WINDOW, DEFAULT_SESSION_WINDOW)): vol.All(int, vol.Range(min=5, max=300)),
             }
         )
