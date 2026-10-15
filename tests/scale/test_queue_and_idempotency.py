@@ -55,6 +55,13 @@ class FakeRepository:
     async def user_measurements(self, user_id):
         return [m for m in self.measurements.values() if m.get("user_id") == user_id and m["status"] == "assigned"]
 
+    async def update_measurement_assignment(self, measurement_id, *, status, user_id, method):
+        record = next((item for item in self.measurements.values() if item["id"] == measurement_id), None)
+        if not record:
+            return None
+        record.update({"status": status, "user_id": user_id, "assignment_method": method})
+        return record
+
 
 def test_api_service_is_idempotent_by_measurement_uuid():
     repo = FakeRepository()
@@ -67,3 +74,23 @@ def test_api_service_is_idempotent_by_measurement_uuid():
     assert first["status"] == "assigned"
     assert second["idempotent"] is True
     assert len(repo.measurements) == 1
+
+
+def test_manual_assignment_reassignment_and_discard():
+    repo = FakeRepository()
+    alice = {"id": uuid4(), "name": "Alice", "initial_reference_weight_kg": 61.0, "auto_assign_tolerance_kg": 3.0, "height_cm": 170}
+    bob = {"id": uuid4(), "name": "Bob", "initial_reference_weight_kg": 90.0, "auto_assign_tolerance_kg": 3.0, "height_cm": 180}
+    repo.users.extend([alice, bob])
+    service = ScaleService(repo)
+    pending_payload = {"measurement_uuid": uuid4(), "mac_address": "AA:BB:CC:DD:EE:FF", "measured_at": datetime.now(UTC), "received_at": datetime.now(UTC), "weight_kg": 75.0, "original_unit": "kg", "stable": True}
+    pending = asyncio.run(service.ingest(pending_payload))
+    assert pending["status"] == "pending"
+    assigned = asyncio.run(service.assign(pending["id"], alice["id"]))
+    assert assigned["status"] == "assigned" and assigned["assignment_method"] == "manual"
+    corrected = asyncio.run(service.assign(pending["id"], bob["id"], method="corrected"))
+    assert corrected["user_id"] == bob["id"] and corrected["assignment_method"] == "corrected"
+    discarded_payload = {**pending_payload, "measurement_uuid": uuid4(), "weight_kg": 120.0}
+    discarded = asyncio.run(service.ingest(discarded_payload))
+    assert discarded["status"] == "pending"
+    discarded = asyncio.run(service.discard(discarded["id"]))
+    assert discarded["status"] == "discarded" and discarded["user_id"] is None
