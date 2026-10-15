@@ -2,17 +2,16 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import PERCENTAGE, UnitOfMass
+from homeassistant.const import UnitOfMass
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorStateClass
+from homeassistant.util import slugify
 
 from .const import DOMAIN, SIGNAL_UPDATE
 from .runtime import ScaleRuntime
@@ -67,6 +66,7 @@ class ScaleDeviceSensor(RuntimeEntity):
         self.key = key
         self._attr_name = name
         self._attr_unique_id = f"{runtime.mac_address.lower().replace(':', '')}_{key}"
+        self._attr_suggested_object_id = f"smart_house_scale_{key}"
         self._attr_device_class = device_class
         self._attr_native_unit_of_measurement = unit
         self._attr_entity_category = EntityCategory.DIAGNOSTIC if key != "last_measurement" else None
@@ -94,6 +94,7 @@ class ScaleDiagnosticSensor(RuntimeEntity):
     def __init__(self, runtime: ScaleRuntime):
         super().__init__(runtime)
         self._attr_unique_id = f"{runtime.mac_address.lower().replace(':', '')}_diagnostic"
+        self._attr_suggested_object_id = "smart_house_scale_diagnostic"
 
     @property
     def native_value(self) -> str:
@@ -120,6 +121,7 @@ class UserSensor(RuntimeEntity):
         }
         self._attr_unique_id = f"{self.user_id}_{metric}"
         self._attr_name = f"{user.get('name', 'Usuário')} {metric.replace('_', ' ')}"
+        self._attr_suggested_object_id = f"{slugify(user.get('name', 'usuario'))}_{metric}"
         if metric == "weight":
             self._attr_device_class = SensorDeviceClass.WEIGHT
             self._attr_native_unit_of_measurement = UnitOfMass.KILOGRAMS

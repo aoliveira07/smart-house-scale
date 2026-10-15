@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2 — IDs de entidades
+
+- Define `suggested_object_id` estável para as entidades por usuário e por dispositivo.
+
 ## 0.1.1 — compatibilidade HA
 
 - Corrige a assinatura do callback de anúncios BLE nativo do Home Assistant.
