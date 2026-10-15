@@ -1,7 +1,7 @@
 name: "Smart House Scale"
 slug: "smart-house-scale"
 description: "Aplicativo Smart House para administrar a balança Xiaomi, usuários, histórico e pendências."
-version: "0.2.0"
+version: "0.2.1"
 stage: experimental
 startup: application
 boot: auto
