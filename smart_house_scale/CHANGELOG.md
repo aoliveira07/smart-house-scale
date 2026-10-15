@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0 — instalação automatizada do componente Home Assistant
+
+- Inclui a integração `smart_house_scale` na imagem do App.
+- Instala o componente automaticamente em `custom_components` na primeira
+  inicialização, sem exigir repositório personalizado no HACS.
+- Preserva instalações existentes gerenciadas pelo HACS ou manualmente.
+- Solicita uma única reinicialização do Home Assistant Core após instalação ou
+  atualização gerenciada pelo App.
+- Expõe o estado do bootstrap no endpoint `/health`.
+
 ## 0.1.3 — API central Smart House
 
 - Integra o Scale ao FastAPI central existente, sem serviço ou banco paralelo.
