@@ -1,7 +1,7 @@
 const state = { users: [], scales: [], pending: [], health: {}, editingId: null };
 const $ = (selector) => document.querySelector(selector);
 const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
-const api = async (path, options = {}) => { const response = await fetch(`/api/v1${path}`, {headers:{'Content-Type':'application/json',...(options.headers||{})}, ...options}); if (!response.ok) throw new Error((await response.json().catch(()=>({detail:response.statusText}))).detail || response.statusText); return response.status === 204 ? null : response.json(); };
+const api = async (path, options = {}) => { const endpoint = new URL(`api/v1${path}`, document.baseURI); const response = await fetch(endpoint, {headers:{'Content-Type':'application/json',...(options.headers||{})}, ...options}); if (!response.ok) throw new Error((await response.json().catch(()=>({detail:response.statusText}))).detail || response.statusText); return response.status === 204 ? null : response.json(); };
 const toast = (message, error = false) => { const node = $('#toast'); node.textContent = message; node.className = `toast show${error?' error':''}`; setTimeout(() => node.className = 'toast', 2800); };
 const fmt = (value, digits = 1) => value == null ? '—' : Number(value).toLocaleString('pt-BR',{maximumFractionDigits:digits});
 const dateFmt = (value) => value ? new Date(value).toLocaleString('pt-BR') : '—';

@@ -15,16 +15,33 @@ O FastAPI escuta internamente em `127.0.0.1:8000` e o Nginx expõe a API LAN em
 `http://192.168.0.201/api`. A integração Home Assistant usa essa URL e o token
 dedicado configurado no fluxo da integração.
 
-## Configuração inicial
+## Instalação como App
 
-1. No Home Assistant, instale a integração via HACS ou copie o diretório
-   `custom_components/smart_house_scale`.
-2. Adicione a integração, informe o MAC normalizado da balança e use
-   `http://192.168.0.201` como URL da API.
-3. Informe o token Bearer dedicado fornecido pelo administrador. O token não é
-   publicado neste repositório.
-4. Cadastre moradores pela interface e informe altura, peso inicial e, quando
+O painel administrativo é distribuído como um App oficial do repositório de
+Apps do Home Assistant. Não é necessário cadastrar o projeto como repositório
+personalizado do HACS para usar a interface.
+
+1. Em **Configurações → Apps → App Store → Repositórios**, adicione
+   `https://github.com/aoliveira07/smart-house-scale`.
+2. Instale **Smart House Scale**.
+3. Nas opções do App, informe `api_url` (`http://192.168.0.201`) e o token
+   Bearer dedicado. O token é salvo somente nas opções protegidas do Home
+   Assistant e não é publicado neste repositório.
+4. Inicie o App e abra **Smart House Scale** pelo painel lateral via Ingress.
+5. Cadastre moradores pela interface e informe altura, peso inicial e, quando
    necessário para o metabolismo basal, sexo biológico.
+
+O App é o painel e o proxy autenticado para a API central. Ele não cria banco
+local, não acessa PostgreSQL e não executa scanner Bluetooth paralelo.
+
+## Componente Bluetooth do Home Assistant
+
+O recebimento dos advertisements continua pertencendo ao componente nativo do
+Home Assistant, conforme a arquitetura do V1. O App não substitui o stack
+Bluetooth nem transforma a interface em um scanner independente. O diretório
+`custom_components/smart_house_scale` contém esse adaptador, que deve ser
+instalado na instância HA pelo mecanismo de componentes adotado pelo ambiente;
+depois configure-o com o mesmo MAC, `http://192.168.0.201` e token da API.
 
 O Home Assistant não deve apontar para a porta `8000` nem acessar o PostgreSQL.
 O acesso LAN usa o proxy HTTP em `/api`.
@@ -41,24 +58,15 @@ O Home Assistant não acessa PostgreSQL. Cada sessão BLE mantém apenas o últi
 frame temporário, espera a indicação de estabilidade e cria um único
 `measurement_uuid`. A API é idempotente por esse UUID.
 
-## Instalação no Home Assistant
+## Configuração do componente Bluetooth
 
-### HACS
+Depois de instalar o adaptador `custom_components/smart_house_scale`, adicione a
+integração em **Configurações → Dispositivos e serviços → Adicionar integração**
+e informe nome, MAC, URL da API e token Bearer. Confirme que o Bluetooth nativo
+ou um Bluetooth Proxy ESPHome está operacional.
 
-1. Adicione o repositório GitHub como repositório customizado do tipo
-   **Integration**.
-2. Instale `Smart House Scale` e reinicie o Home Assistant.
-3. Em **Configurações → Dispositivos e serviços → Adicionar integração**, informe
-   nome, MAC, URL da API e o token Bearer dedicado.
-4. Confirme que o Bluetooth nativo ou um Bluetooth Proxy ESPHome está operacional.
-
-### Manual
-
-Copie `smart_house_scale/custom_components/smart_house_scale` para
-`config/custom_components/smart_house_scale` e reinicie o Home Assistant.
-
-A configuração de moradores é feita na interface web central; não existe JSON de
-usuários no HA.
+A configuração de moradores é feita na interface do App; não existe JSON de
+usuários no Home Assistant.
 
 ## Backend central
 
