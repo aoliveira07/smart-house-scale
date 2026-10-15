@@ -1,0 +1,18 @@
+[Unit]
+Description=Smart House Scale central API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=smart-house
+WorkingDirectory=/opt/smart-house/apps
+EnvironmentFile=/etc/smart-house/scale.env
+ExecStart=/opt/smart-house/venv/bin/uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

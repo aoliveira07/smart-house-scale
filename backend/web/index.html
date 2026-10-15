@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Smart House Scale</title><link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<main class="app-shell">
+  <header class="app-header">
+    <div class="brand"><div class="brand-mark">⌂</div><div><div class="brand-kicker">SMART HOUSE · SH-SCALE</div><h1>Smart House Scale</h1><p>Pesagens locais, histórico persistente e atribuição segura.</p></div></div>
+    <div class="version-chip"><span>V1</span><strong>homologação</strong></div>
+  </header>
+  <nav class="main-nav"><button class="nav-item active" data-tab="dashboard">Visão geral</button><button class="nav-item" data-tab="users">Usuários</button><button class="nav-item" data-tab="pending">Pendências <b id="pending-badge">0</b></button><button class="nav-item" data-tab="diagnostics">Diagnóstico</button></nav>
+  <section id="dashboard" class="panel active">
+    <div class="page-heading"><div><div class="section-kicker">VISÃO GERAL</div><h2>Saúde da casa</h2><p>O peso só entra no histórico depois de estabilizado e atribuído.</p></div><button class="button secondary" id="refresh">Atualizar</button></div>
+    <div id="status-grid" class="status-grid"></div>
+    <div class="section-heading"><div><div class="section-kicker">HISTÓRICO PESSOAL</div><h2>Moradores</h2></div><span class="count-label" id="user-count">—</span></div>
+    <div id="user-cards" class="user-cards"></div>
+  </section>
+  <section id="users" class="panel">
+    <div class="page-heading"><div><div class="section-kicker">CADASTRO</div><h2>Usuários da casa</h2><p>O peso inicial é usado apenas até existir histórico confiável.</p></div></div>
+    <form id="user-form" class="form-card"><input type="hidden" name="id"><div class="form-card-title"><span class="card-icon">◉</span><div><h3 id="user-form-title">Novo usuário</h3><p>Campos de saúde ficam no PostgreSQL central.</p></div></div><label>Nome<input name="name" required maxlength="120"></label><label>Avatar (URL opcional)<input name="avatar" maxlength="500"></label><label>Nascimento<input name="birth_date" type="date"></label><label>Altura (cm)<input name="height_cm" type="number" min="1" step="0.1"></label><label>Sexo biológico (opcional)<select name="biological_sex"><option value="">Não informado</option><option value="female">Feminino</option><option value="male">Masculino</option><option value="other">Outro</option></select></label><label>Peso inicial (kg)<input name="initial_reference_weight_kg" type="number" min="1" step="0.1" required></label><label>Meta (kg)<input name="target_weight_kg" type="number" min="1" step="0.1"></label><label>Tolerância automática (kg)<input name="auto_assign_tolerance_kg" type="number" min="0.1" step="0.1" value="3"></label><label class="check-label"><input name="active" type="checkbox" checked> Ativo</label><button class="button primary" type="submit">Salvar usuário</button><button class="button secondary" type="button" id="cancel-edit">Limpar</button></form>
+    <div id="user-table" class="entity-list"></div>
+  </section>
+  <section id="detail" class="panel"><div class="page-heading"><div><div class="section-kicker">DETALHE DO USUÁRIO</div><h2 id="detail-title">—</h2><p id="detail-subtitle">—</p></div><button class="button secondary" data-tab="dashboard">Voltar</button></div><div id="detail-summary" class="metric-grid"></div><article class="surface-card chart-card"><div class="card-heading"><div><h3>Evolução</h3><p>Mediana diária para reduzir oscilações de curto prazo.</p></div><span class="origin-badge">peso: measured · indicadores: calculated</span></div><svg id="chart" viewBox="0 0 700 240" role="img" aria-label="Gráfico de evolução do peso"></svg></article><div id="detail-history" class="table-wrap surface-card"></div></section>
+  <section id="pending" class="panel"><div class="page-heading"><div><div class="section-kicker">REVISÃO NECESSÁRIA</div><h2>Pesagens aguardando identificação</h2><p>Essas leituras não alteram histórico, peso atual ou indicadores até uma decisão.</p></div></div><div id="pending-list" class="pending-list"></div></section>
+  <section id="diagnostics" class="panel"><div class="page-heading"><div><div class="section-kicker">SUPORTE</div><h2>Diagnóstico</h2><p>Estado do backend e da última comunicação conhecida do Home Assistant.</p></div><button class="button secondary" id="download">Baixar JSON</button></div><pre id="diagnostics-json" class="diagnostics-output">Carregando…</pre></section>
+  <footer class="app-footer"><span>Smart House Scale · integração local</span><span>origens: measured · calculated · estimated</span></footer>
+</main><div id="toast" class="toast" role="status"></div><script src="/static/app.js"></script>
+</body></html>

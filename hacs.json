@@ -1,0 +1,8 @@
+{
+  "name": "Smart House Scale",
+  "homeassistant": "2024.8.0",
+  "render_readme": true,
+  "zip_release": true,
+  "filename": "smart_house_scale.zip",
+  "content_in_root": true
+}
