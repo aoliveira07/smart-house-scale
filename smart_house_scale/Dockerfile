@@ -1,6 +1,6 @@
 FROM ghcr.io/home-assistant/base:latest
 
-ARG BUILD_VERSION=0.2.4
+ARG BUILD_VERSION=0.3.0
 ARG BUILD_ARCH=local
 
 LABEL \
@@ -16,6 +16,7 @@ RUN python3 -m pip install --no-cache-dir --break-system-packages -r /addon_requ
 COPY run.sh /run.sh
 COPY addon_app /app/addon_app
 COPY backend/web /app/web
+COPY custom_components /opt/smart_house_scale/custom_components
 
 RUN chmod a+x /run.sh
 WORKDIR /app

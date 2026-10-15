@@ -28,7 +28,13 @@ personalizado do HACS para usar a interface.
    Bearer dedicado. O token é salvo somente nas opções protegidas do Home
    Assistant e não é publicado neste repositório.
 4. Inicie o App e abra **Smart House Scale** pelo painel lateral via Ingress.
-5. Cadastre moradores pela interface e informe altura, peso inicial e, quando
+5. Na primeira inicialização, o App instala automaticamente a integração
+   `smart_house_scale` em `custom_components` e solicita uma única reinicialização
+   do Home Assistant Core. Não é necessário cadastrar o repositório no HACS.
+6. Abra **Configurações → Dispositivos e serviços**, adicione a integração
+   **Smart House Scale** e informe MAC, URL e token da balança. Essa etapa é a
+   configuração da balança, não a instalação do código.
+7. Cadastre moradores pela interface e informe altura, peso inicial e, quando
    necessário para o metabolismo basal, sexo biológico.
 
 O App é o painel e o proxy autenticado para a API central. Ele não cria banco
@@ -38,10 +44,14 @@ local, não acessa PostgreSQL e não executa scanner Bluetooth paralelo.
 
 O recebimento dos advertisements continua pertencendo ao componente nativo do
 Home Assistant, conforme a arquitetura do V1. O App não substitui o stack
-Bluetooth nem transforma a interface em um scanner independente. O diretório
-`custom_components/smart_house_scale` contém esse adaptador, que deve ser
-instalado na instância HA pelo mecanismo de componentes adotado pelo ambiente;
-depois configure-o com o mesmo MAC, `http://192.168.0.201` e token da API.
+Bluetooth nem transforma a interface em um scanner independente. A imagem do
+App contém o adaptador revisado e o instala no diretório
+`custom_components/smart_house_scale` durante o bootstrap. O App usa o mount
+`homeassistant_config` documentado pelo Supervisor apenas para essa finalidade.
+
+Se a integração já existir por HACS ou por instalação manual, o bootstrap não a
+substitui. Nesse caso o HACS continua sendo o responsável por aquela cópia e o
+App apenas registra o estado `external_existing` no endpoint `/health`.
 
 O Home Assistant não deve apontar para a porta `8000` nem acessar o PostgreSQL.
 O acesso LAN usa o proxy HTTP em `/api`.
@@ -60,10 +70,10 @@ frame temporário, espera a indicação de estabilidade e cria um único
 
 ## Configuração do componente Bluetooth
 
-Depois de instalar o adaptador `custom_components/smart_house_scale`, adicione a
-integração em **Configurações → Dispositivos e serviços → Adicionar integração**
-e informe nome, MAC, URL da API e token Bearer. Confirme que o Bluetooth nativo
-ou um Bluetooth Proxy ESPHome está operacional.
+Depois do bootstrap automático, adicione a integração em **Configurações →
+Dispositivos e serviços → Adicionar integração** e informe nome, MAC, URL da API
+e token Bearer. Confirme que o Bluetooth nativo ou um Bluetooth Proxy ESPHome
+está operacional.
 
 A configuração de moradores é feita na interface do App; não existe JSON de
 usuários no Home Assistant.
