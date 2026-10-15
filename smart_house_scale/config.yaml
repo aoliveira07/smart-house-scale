@@ -1,7 +1,7 @@
 name: "Smart House Scale"
 slug: "smart-house-scale"
 description: "Aplicativo Smart House para administrar a balança Xiaomi, usuários, histórico e pendências."
-version: "0.2.2"
+version: "0.2.3"
 stage: experimental
 startup: application
 boot: auto
@@ -18,10 +18,10 @@ image: ghcr.io/aoliveira07/home-assistant-smart-house-scale
 init: false
 
 ingress: true
-ingress_port: 8099
+ingress_port: 8100
 panel_icon: mdi:scale-bathroom
 panel_title: Smart House Scale
-watchdog: "http://[HOST]:8099/health"
+watchdog: "http://[HOST]:8100/health"
 
 options:
   api_url: "http://192.168.0.201"

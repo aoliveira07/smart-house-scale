@@ -2,9 +2,9 @@
 set -e
 
 export APP_DATA_DIR="/data"
-export APP_VERSION="${BUILD_VERSION:-0.2.2}"
+export APP_VERSION="${BUILD_VERSION:-0.2.3}"
 export APP_HOST="0.0.0.0"
-export APP_PORT="8099"
+export APP_PORT="8100"
 export SMART_HOUSE_SCALE_API_URL="$(bashio::config 'api_url')"
 export SMART_HOUSE_SCALE_API_TOKEN="$(bashio::config 'api_token')"
 

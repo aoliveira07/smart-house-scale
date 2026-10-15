@@ -25,3 +25,7 @@
 - Sessão de 30 segundos, estabilização, deduplicação e fila offline persistente.
 - API FastAPI/PostgreSQL, migration `health`, atribuição automática e pendências.
 - Dashboard responsivo, histórico, gráficos, metas, indicadores e diagnóstico.
+## 0.2.3 — Porta exclusiva para host network
+
+- Move o Ingress e o watchdog para a porta `8100`, evitando conflito com o Neocontrol Module Manager em `8099`.
+
