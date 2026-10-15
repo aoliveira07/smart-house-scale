@@ -29,3 +29,7 @@
 
 - Move o Ingress e o watchdog para a porta `8100`, evitando conflito com o Neocontrol Module Manager em `8099`.
 
+## 0.2.4 — Porta exclusiva de alta faixa
+
+- Move o Ingress e o watchdog para a porta `18099`, livre no host do Home Assistant.
+
