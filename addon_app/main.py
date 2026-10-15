@@ -20,7 +20,7 @@ if CENTRAL_API_URL.endswith("/api"):
     CENTRAL_API_URL = CENTRAL_API_URL[:-4]
 API_TOKEN = os.getenv("SMART_HOUSE_SCALE_API_TOKEN", "")
 
-app = FastAPI(title="Smart House Scale App", version=os.getenv("APP_VERSION", "0.2.0"))
+app = FastAPI(title="Smart House Scale App", version=os.getenv("APP_VERSION", "0.2.2"))
 app.mount("/static", StaticFiles(directory=WEB_DIR / "static"), name="smart-house-scale-static")
 
 

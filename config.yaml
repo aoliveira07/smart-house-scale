@@ -1,7 +1,7 @@
 name: "Smart House Scale"
 slug: "smart-house-scale"
 description: "Aplicativo Smart House para administrar a balança Xiaomi, usuários, histórico e pendências."
-version: "0.2.1"
+version: "0.2.2"
 stage: experimental
 startup: application
 boot: auto
@@ -9,6 +9,10 @@ boot: auto
 arch:
   - amd64
   - aarch64
+
+# The central Smart House API is intentionally LAN-only.  Use the official
+# Home Assistant App host network mode so the proxy can reach 192.168.0.201.
+host_network: true
 
 image: ghcr.io/aoliveira07/home-assistant-smart-house-scale
 init: false
