@@ -59,7 +59,7 @@ class ScaleRuntime:
         # fires when HA sees changed data and would hide repeated scale frames.
         register = getattr(bluetooth, "async_register_advertisement_callback", None)
         if register:
-            self.cancel_ble = register(self.hass, self._on_advertisement, matcher)
+            self.cancel_ble = register(self.hass, self._on_advertisement, self.mac_address)
         else:
             self.cancel_ble = bluetooth.async_register_callback(
                 self.hass, self._on_advertisement, matcher, bluetooth.BluetoothScanningMode.PASSIVE
@@ -77,7 +77,7 @@ class ScaleRuntime:
             self.flush_task = None
 
     @callback
-    def _on_advertisement(self, service_info: Any) -> None:
+    def _on_advertisement(self, service_info: Any, *_args: Any) -> None:
         try:
             parsed = parse_service_info(service_info, expected_mac=self.mac_address)
         except ValueError as exc:
