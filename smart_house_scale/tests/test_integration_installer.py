@@ -1,7 +1,10 @@
 import json
 from pathlib import Path
 
-from smart_house_scale.addon_app.integration_installer import ensure_integration
+try:
+    from smart_house_scale.addon_app.integration_installer import ensure_integration
+except ModuleNotFoundError:
+    from addon_app.integration_installer import ensure_integration
 
 
 def _source_tree(tmp_path: Path, version: str = "0.1.4") -> Path:
