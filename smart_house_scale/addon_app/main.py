@@ -6,9 +6,10 @@ import asyncio
 import logging
 import os
 from pathlib import Path
+from uuid import UUID
 
 import httpx
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 
@@ -24,6 +25,28 @@ if CENTRAL_API_URL.endswith("/api"):
     CENTRAL_API_URL = CENTRAL_API_URL[:-4]
 API_TOKEN = os.getenv("SMART_HOUSE_SCALE_API_TOKEN", "")
 _LOGGER = logging.getLogger(__name__)
+_MAX_AVATAR_BYTES = 5 * 1024 * 1024
+_AVATAR_TYPES = {
+    "image/png": ".png",
+    "image/jpeg": ".jpg",
+    "image/webp": ".webp",
+}
+
+
+def _avatar_directory() -> Path:
+    configured = Path(os.getenv("APP_DATA_DIR", "/data")) / "avatars"
+    try:
+        configured.mkdir(parents=True, exist_ok=True)
+        return configured
+    except OSError:
+        # Local development can run outside the App container where /data is
+        # not writable.  The add-on always uses the persistent /data path.
+        fallback = BASE_DIR / "data" / "avatars"
+        fallback.mkdir(parents=True, exist_ok=True)
+        return fallback
+
+
+AVATAR_DIR = _avatar_directory()
 _integration_status: dict[str, object] = {
     "status": "not_started",
     "version": None,
@@ -33,8 +56,9 @@ _integration_status: dict[str, object] = {
 }
 _restart_task: asyncio.Task[None] | None = None
 
-app = FastAPI(title="Smart House Scale App", version=os.getenv("APP_VERSION", "0.3.0"))
+app = FastAPI(title="Smart House Scale App", version=os.getenv("APP_VERSION", "0.4.0"))
 app.mount("/static", StaticFiles(directory=WEB_DIR / "static"), name="smart-house-scale-static")
+app.mount("/avatars", StaticFiles(directory=AVATAR_DIR), name="smart-house-scale-avatars")
 
 
 @app.on_event("startup")
@@ -95,6 +119,28 @@ async def _restart_home_assistant_core() -> None:
 @app.get("/", include_in_schema=False)
 async def index() -> FileResponse:
     return FileResponse(WEB_DIR / "index.html")
+
+
+@app.post("/avatar-upload/{user_id}", include_in_schema=False)
+async def upload_avatar(user_id: UUID, file: UploadFile = File(...)) -> dict[str, str]:
+    """Persist a private per-installation avatar under the App data volume."""
+
+    extension = _AVATAR_TYPES.get(file.content_type or "")
+    if extension is None:
+        raise HTTPException(status_code=415, detail="Use PNG, JPEG ou WebP para o avatar.")
+
+    payload = await file.read(_MAX_AVATAR_BYTES + 1)
+    if len(payload) > _MAX_AVATAR_BYTES:
+        raise HTTPException(status_code=413, detail="O avatar deve ter no máximo 5 MB.")
+    if not payload:
+        raise HTTPException(status_code=400, detail="O arquivo do avatar está vazio.")
+
+    target = AVATAR_DIR / f"{user_id}{extension}"
+    temporary = AVATAR_DIR / f".{user_id}.upload"
+    temporary.write_bytes(payload)
+    temporary.replace(target)
+
+    return {"url": f"/avatars/{user_id}{extension}", "content_type": file.content_type or ""}
 
 
 @app.get("/health", include_in_schema=False)
