@@ -591,8 +591,11 @@ class ScaleRepository:
         database = self.db.execute(text("SELECT current_database()")).scalar_one()
         last = self.db.execute(
             text(
-                "SELECT measured_at, received_at FROM health.scale_measurements "
-                "ORDER BY received_at DESC LIMIT 1"
+                "SELECT m.measured_at, m.received_at, m.weight_kg, m.status, "
+                "m.user_id, u.name AS user_name "
+                "FROM health.scale_measurements m "
+                "LEFT JOIN health.scale_users u ON u.id = m.user_id "
+                "ORDER BY m.received_at DESC LIMIT 1"
             )
         ).mappings().one_or_none()
         ha = self.db.execute(

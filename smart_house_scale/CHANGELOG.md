@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.4 — visão geral centrada nos moradores
+
+- Prioriza moradores, peso atual, histórico e evolução na entrada do App.
+- Move os cartões técnicos da balança, última pesagem, PostgreSQL e pendências
+  para uma seção secundária.
+- Mostra peso e estado da última pesagem realmente registrada.
+- Melhora o gráfico de evolução com pontos e datas no eixo horizontal.
+
 ## 0.4.3 — atualização de assets no navegador
 
 - Versiona os URLs dos arquivos estáticos para impedir que navegadores mantenham
