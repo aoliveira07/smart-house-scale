@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.5 — 2026-10-15
+
+- Reorganiza a aba Usuários para mostrar primeiro os moradores, evolução, metas e indicadores.
+- Move a situação da balança, comunicação com a API, PostgreSQL e pendências para uma seção secundária.
+- Mantém edição e cadastro abaixo do histórico pessoal e da situação técnica.
+
 ## 0.4.4 — visão geral centrada nos moradores
 
 - Prioriza moradores, peso atual, histórico e evolução na entrada do App.
