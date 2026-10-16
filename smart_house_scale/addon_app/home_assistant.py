@@ -15,7 +15,7 @@ from uuid import uuid4
 import httpx
 import websockets
 
-from .ingestion import OfflineQueue, ScaleApiClient, SessionAggregator, parse_weight_entity_state
+from .ingestion import OfflineQueue, ScaleApiClient, SessionAggregator, normalize_mac, parse_weight_entity_state
 from .settings import validate_weight_entity_id
 
 
@@ -65,6 +65,9 @@ class HomeAssistantEntityBridge:
         self.last_error: str | None = None
         self.last_connection_attempt: str | None = None
         self.last_result: dict[str, Any] | None = None
+        self.entity_mac_address: str | None = None
+        self.entity_model: str | None = None
+        self.entity_device_name: str | None = None
 
     async def start(self) -> None:
         if self._started:
@@ -151,9 +154,14 @@ class HomeAssistantEntityBridge:
                     }
                 )
             )
+            if not self._stop.is_set():
+                await self._load_entity_metadata(websocket)
             try:
                 current = await self._rest_json(f"/states/{quote(self.entity_id, safe='')}")
-                await self._handle_state(current)
+                # The initial snapshot is diagnostic only. A value already
+                # present before the App connected must not become a second
+                # measurement after every restart/update.
+                await self._handle_state(current, record=False)
             except Exception as exc:
                 # WebSocket events remain useful if the initial REST snapshot
                 # is temporarily unavailable.
@@ -171,7 +179,7 @@ class HomeAssistantEntityBridge:
                 if new_state:
                     await self._handle_state(new_state)
 
-    async def _handle_state(self, state: Any) -> None:
+    async def _handle_state(self, state: Any, *, record: bool = True) -> None:
         if not isinstance(state, Mapping):
             return
         actual_entity_id = str(state.get("entity_id") or self.entity_id)
@@ -194,9 +202,17 @@ class HomeAssistantEntityBridge:
             "last_updated": state.get("last_updated"),
             "attributes": dict(attributes) if isinstance(attributes, Mapping) else {},
         }
-        reading = parse_weight_entity_state(state, entity_id=self.entity_id)
+        reading = parse_weight_entity_state(
+            state,
+            entity_id=self.entity_id,
+            mac_address_override=self.entity_mac_address,
+            model_override=self.entity_model,
+        )
         if reading is None:
             self.last_state = "waiting_for_numeric_weight"
+            return
+        if not record:
+            self.last_state = "connected"
             return
         self.last_seen_at = datetime.now(UTC).isoformat()
         final = self.sessions.ingest(reading)
@@ -216,7 +232,7 @@ class HomeAssistantEntityBridge:
             "session_last_seen_at": session.last_seen_at.isoformat() if session else None,
             "advertisement_count": session.advertisement_count if session else 1,
             "mac_address": reading.mac_address,
-            "device_name": raw_payload.get("friendly_name") or self.entity_id,
+            "device_name": raw_payload.get("friendly_name") or self.entity_device_name or self.entity_id,
             "measured_at": reading.measured_at.isoformat(),
             "received_at": received_at,
             "weight_kg": reading.weight_kg,
@@ -283,6 +299,66 @@ class HomeAssistantEntityBridge:
             response.raise_for_status()
             return response.json()
 
+    async def _load_entity_metadata(self, websocket: Any) -> None:
+        """Resolve a native device MAC/model without requiring a manual field."""
+
+        try:
+            entity_registry = await self._websocket_command(
+                websocket,
+                "config/entity_registry/list",
+            )
+            entity = next(
+                (
+                    item
+                    for item in entity_registry
+                    if isinstance(item, Mapping) and item.get("entity_id") == self.entity_id
+                ),
+                None,
+            )
+            device_id = entity.get("device_id") if isinstance(entity, Mapping) else None
+            if not device_id:
+                return
+            devices = await self._websocket_command(websocket, "config/device_registry/list")
+            device = next(
+                (
+                    item
+                    for item in devices
+                    if isinstance(item, Mapping) and item.get("id") == device_id
+                ),
+                None,
+            )
+            if not isinstance(device, Mapping):
+                return
+            self.entity_model = str(device.get("model") or device.get("manufacturer") or "") or None
+            self.entity_device_name = str(device.get("name") or "") or None
+            for connection in device.get("connections") or []:
+                if isinstance(connection, (list, tuple)) and len(connection) == 2:
+                    kind, value = str(connection[0]).lower(), str(connection[1])
+                    if kind in {"bluetooth", "bluetooth_le"}:
+                        try:
+                            self.entity_mac_address = normalize_mac(value)
+                            return
+                        except ValueError:
+                            continue
+        except Exception as exc:
+            # Registry permissions/versions vary. Entity attributes and the
+            # deterministic entity-ID fallback still keep ingestion working.
+            _LOGGER.debug("Home Assistant device registry metadata unavailable: %s", type(exc).__name__)
+
+    async def _websocket_command(self, websocket: Any, command_type: str) -> list[Any]:
+        self._subscription_id += 1
+        command_id = self._subscription_id
+        await websocket.send(json.dumps({"id": command_id, "type": command_type}))
+        for _ in range(20):
+            message = await self._receive_json(websocket)
+            if message.get("type") != "result" or message.get("id") != command_id:
+                continue
+            if message.get("success") is not True:
+                return []
+            result = message.get("result")
+            return result if isinstance(result, list) else []
+        return []
+
     async def list_weight_sensors(self) -> list[dict[str, Any]]:
         states = await self._rest_json("/states")
         if not isinstance(states, list):
@@ -330,6 +406,9 @@ class HomeAssistantEntityBridge:
             "last_connection_attempt": self.last_connection_attempt,
             "last_seen_at": self.last_seen_at,
             "last_entity_state": self.last_entity_state,
+            "device_registry_mac": self.entity_mac_address,
+            "device_registry_model": self.entity_model,
+            "device_registry_name": self.entity_device_name,
             "last_measurement": self.last_measurement,
             "last_attempt": self.api.last_attempt,
             "last_sync": self.api.last_success,

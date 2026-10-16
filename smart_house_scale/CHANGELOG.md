@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.1 — 2026-10-16
+
+- Usa o MAC e o modelo do Device Registry do Home Assistant quando a entidade
+  não os publica nos próprios atributos.
+- Não grava o snapshot antigo da entidade como nova pesagem ao reiniciar ou
+  atualizar o App; somente mudanças posteriores geram medições.
+
 ## 0.5.0 — 2026-10-16
 
 - Remove o componente customizado/HACS do App e do pacote publicado.

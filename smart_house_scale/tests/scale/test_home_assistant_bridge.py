@@ -60,14 +60,17 @@ async def _test_supervisor_websocket_authentication_and_subscription(tmp_path: P
 
     assert socket.sent[0] == {"type": "auth", "access_token": "supervisor-token"}
     assert socket.sent[1]["type"] == "subscribe_events"
-    assert bridge.last_measurement["weight_kg"] == 81.35
+    assert bridge.last_measurement is None
+    bridge._stop.clear()
+    await bridge._handle_state(_state("81.36"))
+    assert bridge.last_measurement["weight_kg"] == 81.36
     assert bridge.last_state == "assigned"
 
 
-def _state():
+def _state(value="81.35"):
     return {
         "entity_id": "sensor.scale_weight",
-        "state": "81.35",
+        "state": value,
         "last_changed": "2026-10-16T02:24:00Z",
         "attributes": {"unit_of_measurement": "kg", "device_class": "weight"},
     }

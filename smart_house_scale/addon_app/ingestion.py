@@ -96,7 +96,13 @@ def _mac_from_attributes(attributes: Mapping[str, Any], entity_id: str) -> str:
     return _synthetic_entity_mac(entity_id)
 
 
-def parse_weight_entity_state(state: Any, *, entity_id: str) -> ParsedMeasurement | None:
+def parse_weight_entity_state(
+    state: Any,
+    *,
+    entity_id: str,
+    mac_address_override: str | None = None,
+    model_override: str | None = None,
+) -> ParsedMeasurement | None:
     """Parse any numeric Home Assistant weight sensor state.
 
     Native Xiaomi entities normally publish kilograms and may include the
@@ -149,7 +155,7 @@ def parse_weight_entity_state(state: Any, *, entity_id: str) -> ParsedMeasuremen
         rssi = int(rssi_value) if rssi_value is not None else None
     except (TypeError, ValueError):
         rssi = None
-    model_value = attributes.get("model") or attributes.get("model_name") or attributes.get("device_model")
+    model_value = model_override or attributes.get("model") or attributes.get("model_name") or attributes.get("device_model")
     manufacturer = attributes.get("manufacturer")
     model = str(model_value or manufacturer or "") or None
     friendly_name = str(attributes.get("friendly_name") or actual_entity_id)
@@ -167,7 +173,11 @@ def parse_weight_entity_state(state: Any, *, entity_id: str) -> ParsedMeasuremen
         impedance=impedance,
         protocol=str(attributes.get("protocol") or "home_assistant_entity"),
         model=model,
-        mac_address=_mac_from_attributes(attributes, actual_entity_id),
+        mac_address=(
+            normalize_mac(mac_address_override)
+            if mac_address_override
+            else _mac_from_attributes(attributes, actual_entity_id)
+        ),
         rssi=rssi,
         raw_payload={
             "source": "home_assistant_state_entity",
@@ -176,7 +186,9 @@ def parse_weight_entity_state(state: Any, *, entity_id: str) -> ParsedMeasuremen
             "state": str(value),
             "unit_of_measurement": raw_unit or "kg",
             "device_class": attributes.get("device_class"),
-            "mac_address_source": "entity_attribute"
+            "mac_address_source": "device_registry"
+            if mac_address_override
+            else "entity_attribute"
             if any(attributes.get(key) for key in ("mac_address", "bluetooth_address", "address", "mac"))
             else "entity_id_fallback",
         },

@@ -44,6 +44,19 @@ def test_entity_units_are_normalized_to_kg_and_missing_mac_is_stable():
     assert pounds.raw_payload["mac_address_source"] == "entity_id_fallback"
 
 
+def test_device_registry_metadata_overrides_missing_entity_mac():
+    reading = parse_weight_entity_state(
+        {"state": "81.35", "attributes": {"unit_of_measurement": "kg", "device_class": "weight"}},
+        entity_id="sensor.casal_balanca_peso",
+        mac_address_override="D0:7B:6F:30:DC:7E",
+        model_override="MJTZC02YM",
+    )
+    assert reading is not None
+    assert reading.mac_address == "D0:7B:6F:30:DC:7E"
+    assert reading.model == "MJTZC02YM"
+    assert reading.raw_payload["mac_address_source"] == "device_registry"
+
+
 def test_unknown_or_non_weight_values_are_ignored():
     assert parse_weight_entity_state({"state": "unknown", "attributes": {}}, entity_id="sensor.scale") is None
     assert parse_weight_entity_state({"state": "42", "attributes": {"unit_of_measurement": "%"}}, entity_id="sensor.scale") is None
