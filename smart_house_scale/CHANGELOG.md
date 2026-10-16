@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.1 — publicação da imagem multi-arquitetura
+
+- Alinha a versão do App ao workflow de publicação do repositório.
+- Mantém a interface de cartões expansíveis e avatares persistentes da 0.4.0.
+
 ## 0.4.0 — cartões de moradores e avatares persistentes
 
 - Mostra os moradores cadastrados imediatamente no início da tela Usuários.
