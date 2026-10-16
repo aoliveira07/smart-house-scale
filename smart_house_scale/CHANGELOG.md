@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.2 — compatibilidade completa com Ingress
+
+- Corrige as consultas de diagnóstico para usar o caminho relativo do App.
+- Corrige o upload e a exibição de avatares quando o App é aberto pelo Ingress
+  do Home Assistant.
+
 ## 0.4.1 — publicação da imagem multi-arquitetura
 
 - Alinha a versão do App ao workflow de publicação do repositório.
