@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.6 — 2026-10-15
+
+- Corrige o callback do dispatcher do Home Assistant que atualiza as entidades após uma medição.
+- Permite que o evento Bluetooth entregue o identificador da entrada sem interromper o processamento do peso.
+- Atualiza a integração embarcada para 0.1.5 e mantém a documentação da tela Usuários alinhada ao layout atual.
+
 ## 0.4.5 — 2026-10-15
 
 - Reorganiza a aba Usuários para mostrar primeiro os moradores, evolução, metas e indicadores.
