@@ -1,7 +1,7 @@
-name: "Smart House Scale"
+name: "Tecnohead Scale"
 slug: "smart-house-scale"
-description: "Aplicativo Smart House para administrar a balança Xiaomi, usuários, histórico e pendências."
-version: "0.6.0"
+description: "Aplicativo Tecnohead para administrar a balança, usuários, histórico e pendências."
+version: "0.7.0"
 stage: experimental
 startup: application
 boot: auto
@@ -29,8 +29,8 @@ services:
 
 ingress: true
 ingress_port: 18099
-panel_icon: mdi:scale-bathroom
-panel_title: Smart House Scale
+panel_icon: mdi:heart-pulse
+panel_title: Tecnohead Scale
 watchdog: "http://[HOST]:18099/health"
 
 options:

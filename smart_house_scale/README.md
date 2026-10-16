@@ -1,4 +1,4 @@
-# Smart House Scale — SH-SCALE
+# Tecnohead Scale — SH-SCALE
 
 V1 local para balanças Xiaomi Bluetooth no ecossistema Smart House/Home
 Assistant. O Bluetooth e a descriptografia ficam na integração nativa do Home
@@ -19,7 +19,7 @@ e nunca expõe o token no navegador.
 
 1. Em **Configurações → Apps → App Store → Repositórios**, adicione
    `https://github.com/aoliveira07/smart-house-scale`.
-2. Instale e inicie **Smart House Scale**.
+2. Instale e inicie **Tecnohead Scale**.
 3. Nas opções do App, informe `api_url` (`http://192.168.0.201`), o token
    Bearer dedicado e, inicialmente, `weight_entity_id`. Mantenha o broker
    MQTT do Home Assistant instalado e em execução para publicar as entidades
@@ -46,7 +46,7 @@ pela rota REST `/core/api/states/<entity_id>`.
 ```text
 Xiaomi BLE → Bluetooth nativo HA/ESPHome Proxy → sensor de peso do HA
           → App (WebSocket + fila offline) → API FastAPI central → PostgreSQL / health
-                                                        ↘ UI Smart House Scale
+                                                        ↘ UI Tecnohead Scale
 ```
 
 O Home Assistant não acessa PostgreSQL. A integração nativa recebe o BLE e
@@ -86,7 +86,7 @@ valor recebido, a fila e erros relevantes.
 
 ## Interface
 
-Na Visão geral, cada morador aparece primeiro em cartão expansível com peso,
+Na Visão geral, cada morador aparece primeiro em cartão sempre expandido com peso,
 meta, IMC, variação, tendência e gráfico. A comunicação técnica da balança,
 Home Assistant, PostgreSQL e pendências fica abaixo. A aba Usuários permite
 cadastro, edição, avatar, histórico e evolução.

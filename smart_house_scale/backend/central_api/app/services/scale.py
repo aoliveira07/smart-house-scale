@@ -543,22 +543,41 @@ class ScaleRepository:
         before = self.get_measurement(measurement_id)
         if before is None:
             return None
-        row = self.db.execute(
-            text(
-                """
-                UPDATE health.scale_measurements
-                SET status = :status,
+        if status not in {"assigned", "discarded"}:
+            raise ValueError("invalid measurement assignment status")
+        if status == "assigned":
+            assignment_sql = """
+                SET status = 'assigned',
                     user_id = :user_id,
                     assignment_method = :method,
-                    assigned_at = CASE WHEN :status = 'assigned' THEN now() ELSE NULL END,
-                    discarded_at = CASE WHEN :status = 'discarded' THEN now() ELSE NULL END,
-                    pending_reason = CASE WHEN :status = 'assigned' THEN NULL ELSE pending_reason END,
+                    assignment_delta_kg = NULL,
+                    confidence = NULL,
+                    assigned_at = now(),
+                    discarded_at = NULL,
+                    pending_reason = NULL,
                     updated_at = now()
+            """
+        else:
+            assignment_sql = """
+                SET status = 'discarded',
+                    user_id = NULL,
+                    assignment_method = NULL,
+                    assignment_delta_kg = NULL,
+                    confidence = NULL,
+                    assigned_at = NULL,
+                    discarded_at = now(),
+                    updated_at = now()
+            """
+        row = self.db.execute(
+            text(
+                f"""
+                UPDATE health.scale_measurements
+                {assignment_sql}
                 WHERE id = :id
                 RETURNING *
                 """
             ),
-            {"status": status, "user_id": user_id, "method": method, "id": measurement_id},
+            {"user_id": user_id, "method": method, "id": measurement_id},
         ).mappings().one()
         self.db.execute(
             text(

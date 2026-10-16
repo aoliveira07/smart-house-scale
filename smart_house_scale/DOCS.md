@@ -1,4 +1,4 @@
-# Smart House Scale App
+# Tecnohead Scale App
 
 ## Opções
 

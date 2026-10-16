@@ -1,16 +1,15 @@
 .section-heading h2 + p,
 .section-help { margin: 5px 0 0; color: var(--muted); font-size: .72rem; }
 .compact-heading { margin-top: 22px; }
-.user-card-expandable { display: block; padding: 0; overflow: hidden; }
+.user-card-expandable, .user-card-expanded { display: block; padding: 0; overflow: hidden; }
 .user-card-summary { display: grid; grid-template-columns: 48px 1fr auto; gap: 12px; align-items: center; padding: 14px; list-style: none; cursor: pointer; }
 .user-card-summary::-webkit-details-marker { display: none; }
 .status-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 .secondary-section-heading { margin-top: 34px; }
 @media (max-width: 820px) { .status-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 620px) { .status-grid { grid-template-columns: 1fr; } }
-.user-card-summary::after { content: '＋'; color: var(--cyan); font-size: 1.1rem; }
-.user-card-expandable[open] .user-card-summary { border-bottom: 1px solid var(--line); }
-.user-card-expandable[open] .user-card-summary::after { content: '−'; }
+.user-card-expanded .user-card-summary { cursor: default; border-bottom: 1px solid var(--line); }
+.user-card-expanded .user-card-summary::after { content: none; }
 .user-card-heading h3 { margin: 0 0 5px; font-size: .9rem; }
 .user-highlight { min-width: 118px; text-align: right; }
 .user-highlight strong { display: block; font-size: 1.35rem; }

@@ -31,7 +31,7 @@ CENTRAL_API_URL = os.getenv("SMART_HOUSE_SCALE_API_URL", "http://192.168.0.201")
 if CENTRAL_API_URL.endswith("/api"):
     CENTRAL_API_URL = CENTRAL_API_URL[:-4]
 API_TOKEN = os.getenv("SMART_HOUSE_SCALE_API_TOKEN", "")
-APP_VERSION = os.getenv("APP_VERSION", "0.6.0")
+APP_VERSION = os.getenv("APP_VERSION", "0.7.0")
 _MAX_AVATAR_BYTES = 5 * 1024 * 1024
 _AVATAR_TYPES = {
     "image/png": ".png",
@@ -84,7 +84,7 @@ class WeightEntitySelection(BaseModel):
     entity_id: str
 
 
-app = FastAPI(title="Smart House Scale App", version=APP_VERSION)
+app = FastAPI(title="Tecnohead Scale App", version=APP_VERSION)
 app.mount("/static", StaticFiles(directory=WEB_DIR / "static"), name="smart-house-scale-static")
 app.mount("/avatars", StaticFiles(directory=AVATAR_DIR), name="smart-house-scale-avatars")
 

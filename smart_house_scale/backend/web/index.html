@@ -2,29 +2,26 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Smart House Scale</title><link rel="stylesheet" href="static/style.css?v=0.6.0"><link rel="stylesheet" href="static/style.extra.css?v=0.6.0">
+<title>Tecnohead Scale</title><link rel="stylesheet" href="static/style.css?v=0.7.0"><link rel="stylesheet" href="static/style.extra.css?v=0.7.0">
 </head>
 <body>
 <main class="app-shell">
   <header class="app-header">
-    <div class="brand"><div class="brand-mark">⌂</div><div><div class="brand-kicker">SMART HOUSE · SH-SCALE</div><h1>Smart House Scale</h1><p>Pesagens locais, histórico persistente e atribuição segura.</p></div></div>
+    <div class="brand"><div class="brand-mark" role="img" aria-label="Saúde">♥</div><div><div class="brand-kicker">TECNOHEAD · SCALE</div><h1>Tecnohead Scale</h1><p>Pesagens locais, histórico persistente e atribuição segura.</p></div></div>
     <div class="version-chip"><span>V1</span><strong>homologação</strong></div>
   </header>
   <nav class="main-nav"><button class="nav-item active" data-tab="dashboard">Visão geral</button><button class="nav-item" data-tab="users">Usuários</button><button class="nav-item" data-tab="pending">Pendências <b id="pending-badge">0</b></button><button class="nav-item" data-tab="diagnostics">Diagnóstico</button><button class="nav-item" data-tab="configuration">Configuração</button></nav>
   <section id="dashboard" class="panel active">
-    <div class="page-heading"><div><div class="section-kicker">VISÃO GERAL</div><h2>Saúde da casa</h2><p>O peso só entra no histórico depois de estabilizado e atribuído.</p></div><button class="button secondary" id="refresh">Atualizar</button></div>
-    <div class="section-heading"><div><div class="section-kicker">HISTÓRICO PESSOAL</div><h2>Moradores da casa</h2><p class="section-help">Veja primeiro o peso, a evolução e os indicadores de cada pessoa.</p></div><span class="count-label" id="user-count">—</span></div>
+    <div class="section-heading"><div><div class="section-kicker">HISTÓRICO PESSOAL</div><h2>Moradores da casa</h2></div><span class="count-label" id="user-count">—</span></div>
     <div id="user-cards" class="user-cards"></div>
     <div class="section-heading secondary-section-heading"><div><div class="section-kicker">SITUAÇÃO DO SISTEMA</div><h2>Balança e registros</h2><p class="section-help">Informações técnicas e a última pesagem realmente registrada.</p></div></div>
     <div id="status-grid" class="status-grid"></div>
   </section>
   <section id="users" class="panel">
-    <div class="page-heading"><div><div class="section-kicker">MORADORES</div><h2>Moradores da casa</h2><p>Veja primeiro o peso, a evolução e os indicadores de cada pessoa.</p></div><span class="count-label" id="user-count-list">—</span></div>
+    <div class="page-heading"><div><div class="section-kicker">GERENCIAR CADASTRO</div><h2>Editar moradores</h2><p>Ajuste dados, metas e tolerância de identificação.</p></div><span class="count-label" id="user-count-list">—</span></div>
     <div id="user-cards-users" class="user-cards"></div>
     <div class="section-heading secondary-section-heading"><div><div class="section-kicker">BALANÇA E COMUNICAÇÃO</div><h2>Situação do sistema</h2><p class="section-help">A comunicação técnica fica abaixo do histórico pessoal.</p></div></div>
     <div id="status-grid-users" class="status-grid"></div>
-    <div class="section-heading compact-heading"><div><div class="section-kicker">GERENCIAR CADASTRO</div><h2>Editar moradores</h2><p class="section-help">Ajuste dados, metas e tolerância de identificação.</p></div></div>
-    <div id="user-table" class="entity-list"></div>
     <div class="section-heading compact-heading"><div><div class="section-kicker">CADASTRO</div><h2>Adicionar ou editar</h2></div></div>
     <form id="user-form" class="form-card"><input type="hidden" name="id"><div class="form-card-title"><span class="card-icon">◉</span><div><h3 id="user-form-title">Novo usuário</h3><p>Campos de saúde ficam no PostgreSQL central.</p></div></div><label>Nome<input name="name" required maxlength="120"></label><label>Avatar (URL opcional)<input name="avatar" maxlength="500"></label><label>Foto/avatar local (opcional)<input name="avatar_file" type="file" accept="image/png,image/jpeg,image/webp"></label><label>Nascimento<input name="birth_date" type="date"></label><label>Altura (cm)<input name="height_cm" type="number" min="1" step="0.1"></label><label>Sexo biológico (opcional)<select name="biological_sex"><option value="">Não informado</option><option value="female">Feminino</option><option value="male">Masculino</option><option value="other">Outro</option></select></label><label>Peso inicial (kg)<input name="initial_reference_weight_kg" type="number" min="1" step="0.1" required></label><label>Meta (kg)<input name="target_weight_kg" type="number" min="1" step="0.1"></label><label>Tolerância automática (kg)<input name="auto_assign_tolerance_kg" type="number" min="0.1" step="0.1" value="3"></label><label class="check-label"><input name="active" type="checkbox" checked> Ativo</label><button class="button primary" type="submit">Salvar usuário</button><button class="button secondary" type="button" id="cancel-edit">Limpar</button></form>
   </section>
@@ -32,6 +29,6 @@
   <section id="pending" class="panel"><div class="page-heading"><div><div class="section-kicker">REVISÃO NECESSÁRIA</div><h2>Pesagens aguardando identificação</h2><p>Essas leituras não alteram histórico, peso atual ou indicadores até uma decisão.</p></div></div><div id="pending-list" class="pending-list"></div></section>
   <section id="diagnostics" class="panel"><div class="page-heading"><div><div class="section-kicker">SUPORTE</div><h2>Diagnóstico</h2><p>Estado do backend e da última comunicação conhecida do Home Assistant.</p></div><button class="button secondary" id="download">Baixar JSON</button></div><pre id="diagnostics-json" class="diagnostics-output">Carregando…</pre></section>
   <section id="configuration" class="panel"><div class="page-heading"><div><div class="section-kicker">ORIGEM DO PESO</div><h2>Configuração</h2><p>O App ouve uma entidade de peso do Home Assistant. O Bluetooth e a descriptografia continuam sob responsabilidade da integração nativa.</p></div><button class="button secondary" id="refresh-sensors">Atualizar sensores</button></div><div id="configuration-card"></div></section>
-  <footer class="app-footer"><span>Smart House Scale · integração local</span><span>origens: measured · calculated · estimated</span></footer>
-</main><div id="toast" class="toast" role="status"></div><script src="static/app.js?v=0.6.0"></script>
+  <footer class="app-footer"><span>Tecnohead Scale · integração local</span><span>origens: measured · calculated · estimated</span></footer>
+</main><div id="toast" class="toast" role="status"></div><script src="static/app.js?v=0.7.0"></script>
 </body></html>

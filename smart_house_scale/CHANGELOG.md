@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.7.0 — 2026-10-16
+
+- Renomeia a interface e o App para **Tecnohead Scale** e troca o ícone por
+  `mdi:heart-pulse`.
+- Remove o cabeçalho redundante da Visão geral, o botão de atualização manual e
+  a descrição repetida; moradores e histórico permanecem no topo.
+- Atualiza automaticamente os cartões e indicadores a cada 15 segundos.
+- Mantém os cartões de moradores sempre expandidos, sem controles `+`/`−`, e
+  concentra o cadastro nos campos necessários.
+- Corrige a atualização de atribuição manual no serviço central, limpando o
+  estado pendente e mantendo auditoria, histórico e indicadores consistentes.
+- Adiciona regressão automatizada para atribuição manual no serviço central.
+
 ## 0.6.0 — 2026-10-16
 
 - Publica entidades Home Assistant por morador usando MQTT Discovery retido.
