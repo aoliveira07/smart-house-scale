@@ -1,7 +1,7 @@
 name: "Tecnohead Scale"
 slug: "smart-house-scale"
 description: "Aplicativo Tecnohead para administrar a balança, usuários, histórico e pendências."
-version: "0.7.0"
+version: "0.7.1"
 stage: experimental
 startup: application
 boot: auto

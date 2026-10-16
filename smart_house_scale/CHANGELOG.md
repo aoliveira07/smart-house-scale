@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.1 — 2026-10-16
+
+- Rep publica a mesma interface Tecnohead Scale com nova versão de App e
+  cache-busting para forçar o Supervisor do Home Assistant a substituir a
+  imagem antiga efetivamente servida pelo Ingress.
+
 ## 0.7.0 — 2026-10-16
 
 - Renomeia a interface e o App para **Tecnohead Scale** e troca o ícone por
