@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.3 — atualização de assets no navegador
+
+- Versiona os URLs dos arquivos estáticos para impedir que navegadores mantenham
+  uma interface antiga após a atualização do App.
+
 ## 0.4.2 — compatibilidade completa com Ingress
 
 - Corrige as consultas de diagnóstico para usar o caminho relativo do App.

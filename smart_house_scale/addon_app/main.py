@@ -56,7 +56,7 @@ _integration_status: dict[str, object] = {
 }
 _restart_task: asyncio.Task[None] | None = None
 
-app = FastAPI(title="Smart House Scale App", version=os.getenv("APP_VERSION", "0.4.2"))
+app = FastAPI(title="Smart House Scale App", version=os.getenv("APP_VERSION", "0.4.3"))
 app.mount("/static", StaticFiles(directory=WEB_DIR / "static"), name="smart-house-scale-static")
 app.mount("/avatars", StaticFiles(directory=AVATAR_DIR), name="smart-house-scale-avatars")
 
