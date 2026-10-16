@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.2 — 2026-10-16
+
+- Troca o ícone do App para `mdi:heart-plus`, representando saúde e cuidado.
+- Remove o botão **Evolução** da tela **Usuários**; a evolução continua
+  disponível nos cartões da Visão geral.
+
 ## 0.7.1 — 2026-10-16
 
 - Rep publica a mesma interface Tecnohead Scale com nova versão de App e

@@ -1,7 +1,7 @@
 name: "Tecnohead Scale"
 slug: "smart-house-scale"
 description: "Aplicativo Tecnohead para administrar a balança, usuários, histórico e pendências."
-version: "0.7.1"
+version: "0.7.2"
 stage: experimental
 startup: application
 boot: auto
@@ -29,7 +29,7 @@ services:
 
 ingress: true
 ingress_port: 18099
-panel_icon: mdi:heart-pulse
+panel_icon: mdi:heart-plus
 panel_title: Tecnohead Scale
 watchdog: "http://[HOST]:18099/health"
 
