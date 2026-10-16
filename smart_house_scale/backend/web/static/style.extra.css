@@ -10,6 +10,14 @@
 @media (max-width: 620px) { .status-grid { grid-template-columns: 1fr; } }
 .user-card-expanded .user-card-summary { cursor: default; border-bottom: 1px solid var(--line); }
 .user-card-expanded .user-card-summary::after { content: none; }
+.user-manage-card { overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.user-manage-row { display: flex; justify-content: space-between; align-items: center; gap: 14px; min-height: 58px; padding: 12px 14px; }
+.user-manage-row h3 { margin: 0; font-size: .9rem; }
+.user-manage-row .button { flex: 0 0 auto; }
+.user-manage-card .inline-user-form { margin: 0; border: 0; border-top: 1px solid var(--line); border-radius: 0; }
+.inline-user-form[hidden] { display: none; }
+.inline-user-form .form-card-title { grid-column: 1 / -1; }
+.inline-user-form .button { align-self: end; }
 .user-card-heading h3 { margin: 0 0 5px; font-size: .9rem; }
 .user-highlight { min-width: 118px; text-align: right; }
 .user-highlight strong { display: block; font-size: 1.35rem; }

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.3 — 2026-10-16
+
+- Simplifica a aba **Usuários** para mostrar somente o nome e a ação de edição.
+- Abre a edição dentro do próprio cartão, sem levar a tela para o cadastro de
+  novos usuários.
+- Remove da aba **Usuários** os indicadores, evolução e informações técnicas de
+  balança, Home Assistant e PostgreSQL.
+
 ## 0.7.2 — 2026-10-16
 
 - Troca o ícone do App para `mdi:heart-plus`, representando saúde e cuidado.
