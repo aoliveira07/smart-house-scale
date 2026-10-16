@@ -18,6 +18,15 @@
 .inline-user-form[hidden] { display: none; }
 .inline-user-form .form-card-title { grid-column: 1 / -1; }
 .inline-user-form .button { align-self: end; }
+.new-user-toggle { width: 100%; display: flex; align-items: center; gap: 12px; padding: 14px; border: 1px solid var(--line); border-radius: 8px; color: var(--text); background: var(--surface); text-align: left; cursor: pointer; }
+.new-user-toggle:hover { border-color: var(--cyan); background: #1d4c53; }
+.new-user-toggle-icon, .new-user-toggle-chevron { display: grid; place-items: center; width: 32px; height: 32px; flex: 0 0 32px; border: 1px solid var(--strong); border-radius: 50%; color: var(--cyan); font-size: 1.2rem; line-height: 1; }
+.new-user-toggle-copy { flex: 1; }
+.new-user-toggle-copy strong, .new-user-toggle-copy small { display: block; }
+.new-user-toggle-copy small { margin-top: 4px; color: var(--muted); font-size: .72rem; }
+.new-user-toggle[aria-expanded="true"] .new-user-toggle-chevron { transform: rotate(45deg); }
+.new-user-panel { margin-top: 10px; }
+.new-user-panel[hidden] { display: none; }
 .user-card-heading h3 { margin: 0 0 5px; font-size: .9rem; }
 .user-highlight { min-width: 118px; text-align: right; }
 .user-highlight strong { display: block; font-size: 1.35rem; }

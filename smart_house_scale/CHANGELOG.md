@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.4 — 2026-10-16
+
+- Mantém o cadastro de novos usuários fechado por padrão.
+- Abre o formulário de novo usuário no próprio cartão ao clicar.
+
 ## 0.7.3 — 2026-10-16
 
 - Simplifica a aba **Usuários** para mostrar somente o nome e a ação de edição.

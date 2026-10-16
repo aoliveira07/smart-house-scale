@@ -88,8 +88,9 @@ valor recebido, a fila e erros relevantes.
 
 Na Visão geral, cada morador aparece primeiro em cartão sempre expandido com peso,
 meta, IMC, variação, tendência e gráfico. A comunicação técnica da balança,
-Home Assistant, PostgreSQL e pendências fica abaixo. A aba Usuários permite
-cadastro, edição, avatar, histórico e evolução.
+Home Assistant, PostgreSQL e pendências fica abaixo. A aba Usuários é exclusiva
+para cadastro: mostra os nomes dos moradores e permite edição inline. Indicadores,
+histórico e evolução ficam na Visão geral.
 
 ## Backend central
 
