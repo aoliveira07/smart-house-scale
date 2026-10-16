@@ -1,7 +1,7 @@
 name: "Smart House Scale"
 slug: "smart-house-scale"
 description: "Aplicativo Smart House para administrar a balança Xiaomi, usuários, histórico e pendências."
-version: "0.5.1"
+version: "0.6.0"
 stage: experimental
 startup: application
 boot: auto
@@ -21,6 +21,12 @@ init: false
 # or modify the Home Assistant configuration directory.
 homeassistant_api: true
 
+# MQTT Discovery is the supported Home Assistant entity surface for Alexa,
+# HomeKit and dashboards. The App continues to run without a broker, but user
+# entities remain unavailable until the MQTT service is available.
+services:
+  - mqtt:want
+
 ingress: true
 ingress_port: 18099
 panel_icon: mdi:scale-bathroom
@@ -31,8 +37,10 @@ options:
   api_url: "http://192.168.0.201"
   api_token: ""
   weight_entity_id: "sensor.casal_balanca_peso"
+  mqtt_discovery_prefix: "homeassistant"
 
 schema:
   api_url: url
   api_token: password
   weight_entity_id: str
+  mqtt_discovery_prefix: str

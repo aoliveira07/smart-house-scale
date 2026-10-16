@@ -8,6 +8,9 @@
   opções protegidas do Home Assistant e não aparece no navegador nem nos logs.
 - `weight_entity_id`: entidade `sensor` que publica o peso. O padrão é
   `sensor.casal_balanca_peso` e pode ser alterado pela aba Configuração.
+- `mqtt_discovery_prefix`: prefixo MQTT Discovery, normalmente
+  `homeassistant`. O broker e as credenciais são fornecidos pelo serviço MQTT
+  do Supervisor; não devem ser colocados no GitHub.
 
 ## Rede e segurança
 
@@ -25,6 +28,16 @@ o estado inicial pela API REST e encaminha o valor à API central.
 
 O entity ID pode ser selecionado pela interface. A escolha é preservada no
 volume `/data/settings.json`; a fila de medições offline fica no mesmo volume.
+
+## Entidades compartilháveis
+
+Com o serviço MQTT disponível, o App publica entidades somente para moradores
+ativos. O estado retido de cada morador alimenta sensores de peso, IMC,
+tendência, alterações, estatísticas, quantidade de pesagens, meta e metabolismo
+basal estimado. Os
+IDs são derivados do UUID do usuário e não mudam quando o nome é editado.
+Alexa e HomeKit exigem que essas entidades sejam expostas nas próprias
+configurações do Home Assistant.
 
 ## Atualização
 

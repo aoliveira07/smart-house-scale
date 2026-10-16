@@ -6,6 +6,9 @@
   entidades.
 - A API central é dona de usuários, atribuição, histórico, métricas, pendências,
   auditoria e PostgreSQL.
+- O App publica, via MQTT Discovery oficial, somente sensores derivados dos
+  usuários ativos. A balança e os diagnósticos não são expostos como sensores
+  compartilháveis; Alexa/HomeKit continuam sob controle de exposição do HA.
 - A UI é servida pela API central. O HA não consulta o banco.
 
 ## Identificação

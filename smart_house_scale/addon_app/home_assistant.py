@@ -41,6 +41,7 @@ class HomeAssistantEntityBridge:
         session_window_seconds: int = 30,
         websocket_factory: Callable[..., Any] | None = None,
         rest_json: Callable[[str], Awaitable[Any]] | None = None,
+        on_data_changed: Callable[[], None] | None = None,
     ):
         self.api = api
         self.entity_id = validate_weight_entity_id(entity_id)
@@ -51,6 +52,7 @@ class HomeAssistantEntityBridge:
         self.sessions = SessionAggregator(session_window_seconds)
         self._websocket_factory = websocket_factory or websockets.connect
         self._rest_json_override = rest_json
+        self._on_data_changed = on_data_changed
         self._stop = asyncio.Event()
         self._run_task: asyncio.Task[None] | None = None
         self._flush_task: asyncio.Task[None] | None = None
@@ -249,6 +251,7 @@ class HomeAssistantEntityBridge:
             self.last_result = await self.api.post_measurement(payload)
             self.last_state = str(self.last_result.get("status", "assigned"))
             self.last_error = None
+            self._notify_data_changed()
         except Exception as exc:
             self.last_state = "queued"
             self.last_error = type(exc).__name__
@@ -262,8 +265,17 @@ class HomeAssistantEntityBridge:
                 self.last_error = type(exc).__name__
                 break
             self.queue.remove(item["measurement_uuid"])
+            self._notify_data_changed()
         if len(self.queue) == 0 and self.last_result:
             self.last_state = str(self.last_result.get("status", self.last_state))
+
+    def _notify_data_changed(self) -> None:
+        if not self._on_data_changed:
+            return
+        try:
+            self._on_data_changed()
+        except Exception as exc:
+            _LOGGER.debug("User entity refresh notification failed: %s", type(exc).__name__)
 
     async def _flush_loop(self) -> None:
         while not self._stop.is_set():

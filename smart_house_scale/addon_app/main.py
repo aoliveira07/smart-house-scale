@@ -19,6 +19,7 @@ from pydantic import BaseModel
 
 from .home_assistant import HomeAssistantEntityBridge, HomeAssistantUnavailable
 from .ingestion import ScaleApiClient
+from .mqtt_entities import UserEntityPublisher
 from .settings import AppSettings, InvalidEntityId
 
 
@@ -30,7 +31,7 @@ CENTRAL_API_URL = os.getenv("SMART_HOUSE_SCALE_API_URL", "http://192.168.0.201")
 if CENTRAL_API_URL.endswith("/api"):
     CENTRAL_API_URL = CENTRAL_API_URL[:-4]
 API_TOKEN = os.getenv("SMART_HOUSE_SCALE_API_TOKEN", "")
-APP_VERSION = os.getenv("APP_VERSION", "0.5.0")
+APP_VERSION = os.getenv("APP_VERSION", "0.6.0")
 _MAX_AVATAR_BYTES = 5 * 1024 * 1024
 _AVATAR_TYPES = {
     "image/png": ".png",
@@ -55,12 +56,27 @@ AVATAR_DIR = DATA_DIR / "avatars"
 AVATAR_DIR.mkdir(parents=True, exist_ok=True)
 SETTINGS = AppSettings(DATA_DIR)
 CENTRAL_API = ScaleApiClient(CENTRAL_API_URL, API_TOKEN)
+try:
+    _MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
+except ValueError:
+    _MQTT_PORT = 1883
+USER_ENTITIES = UserEntityPublisher(
+    CENTRAL_API,
+    data_dir=DATA_DIR,
+    discovery_prefix=os.getenv("SMART_HOUSE_SCALE_MQTT_DISCOVERY_PREFIX", "homeassistant"),
+    mqtt_host=os.getenv("MQTT_HOST"),
+    mqtt_port=_MQTT_PORT,
+    mqtt_username=os.getenv("MQTT_USER"),
+    mqtt_password=os.getenv("MQTT_PASSWORD"),
+    poll_interval_seconds=int(os.getenv("SMART_HOUSE_SCALE_MQTT_POLL_SECONDS", "30")),
+)
 HOME_ASSISTANT = HomeAssistantEntityBridge(
     CENTRAL_API,
     data_dir=DATA_DIR,
     entity_id=SETTINGS.weight_entity_id,
     supervisor_token=os.getenv("SUPERVISOR_TOKEN", ""),
     session_window_seconds=int(os.getenv("SMART_HOUSE_SCALE_SESSION_WINDOW", "30")),
+    on_data_changed=USER_ENTITIES.request_sync,
 )
 
 
@@ -78,10 +94,12 @@ async def start_home_assistant_bridge() -> None:
     """Start the Supervisor WebSocket listener and the durable queue flusher."""
 
     await HOME_ASSISTANT.start()
+    await USER_ENTITIES.start()
 
 
 @app.on_event("shutdown")
 async def stop_home_assistant_bridge() -> None:
+    await USER_ENTITIES.stop()
     await HOME_ASSISTANT.stop()
 
 
@@ -111,7 +129,11 @@ async def upload_avatar(user_id: UUID, file: UploadFile = File(...)) -> dict[str
 
 @app.get("/configuration")
 async def configuration() -> dict[str, object]:
-    return {"configuration": SETTINGS.public(), "home_assistant": HOME_ASSISTANT.diagnostics()}
+    return {
+        "configuration": SETTINGS.public(),
+        "home_assistant": HOME_ASSISTANT.diagnostics(),
+        "user_entities": USER_ENTITIES.diagnostics(),
+    }
 
 
 @app.put("/configuration/weight-entity")
@@ -121,7 +143,11 @@ async def update_weight_entity(selection: WeightEntitySelection) -> dict[str, ob
         await HOME_ASSISTANT.set_entity_id(entity_id)
     except InvalidEntityId as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
-    return {"configuration": SETTINGS.public(), "home_assistant": HOME_ASSISTANT.diagnostics()}
+    return {
+        "configuration": SETTINGS.public(),
+        "home_assistant": HOME_ASSISTANT.diagnostics(),
+        "user_entities": USER_ENTITIES.diagnostics(),
+    }
 
 
 @app.get("/home-assistant/weight-sensors")
@@ -142,6 +168,7 @@ async def health() -> dict[str, object]:
         "api_url": CENTRAL_API_URL,
         "configuration": SETTINGS.public(),
         "home_assistant": HOME_ASSISTANT.diagnostics(),
+        "user_entities": USER_ENTITIES.diagnostics(),
     }
 
 
@@ -163,6 +190,12 @@ async def central_api_proxy(path: str, request: Request) -> Response:
     body = await request.body()
     async with httpx.AsyncClient(timeout=15.0, follow_redirects=False) as client:
         upstream = await client.request(request.method, target, content=body or None, headers=headers)
+    if (
+        upstream.status_code < 400
+        and request.method in {"POST", "PATCH", "PUT", "DELETE"}
+        and (path.startswith("v1/scale-users") or path.startswith("v1/scale-measurements"))
+    ):
+        USER_ENTITIES.request_sync()
     response_headers = {}
     if upstream.headers.get("content-type"):
         response_headers["content-type"] = upstream.headers["content-type"]

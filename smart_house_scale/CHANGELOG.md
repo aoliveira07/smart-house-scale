@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.6.0 — 2026-10-16
+
+- Publica entidades Home Assistant por morador usando MQTT Discovery retido.
+- Expõe peso, IMC, tendência, variações, estatísticas, frequência, meta e
+  metabolismo basal estimado com IDs estáveis e origem das métricas nos
+  atributos.
+- Mantém fora da superfície compartilhável os dados técnicos da balança, API,
+  Bluetooth, fila e pendências.
+- Usa o serviço MQTT oficial do Home Assistant, sem credenciais no repositório,
+  e remove automaticamente entidades antigas de moradores inativos.
+
 ## 0.5.1 — 2026-10-16
 
 - Usa o MAC e o modelo do Device Registry do Home Assistant quando a entidade

@@ -21,7 +21,9 @@ e nunca expõe o token no navegador.
    `https://github.com/aoliveira07/smart-house-scale`.
 2. Instale e inicie **Smart House Scale**.
 3. Nas opções do App, informe `api_url` (`http://192.168.0.201`), o token
-   Bearer dedicado e, inicialmente, `weight_entity_id`.
+   Bearer dedicado e, inicialmente, `weight_entity_id`. Mantenha o broker
+   MQTT do Home Assistant instalado e em execução para publicar as entidades
+   dos moradores.
 4. Abra o App pelo painel lateral via Ingress e entre em **Configuração**.
 5. Selecione a entidade de peso publicada pelo Home Assistant, por exemplo
    `sensor.casal_balanca_peso`, ou informe o entity ID manualmente.
@@ -56,6 +58,24 @@ Cada mudança numérica é tratada como uma leitura final publicada pelo HA. A
 janela de sessão configurável é de 30 segundos e gera um único
 `measurement_uuid`; a API é idempotente por esse UUID. Se a API central ficar
 indisponível, a medição fica na fila persistente de `/data` e é reenviada.
+
+## Entidades dos moradores para Alexa e HomeKit
+
+O App publica MQTT Discovery retido no broker oficial do Home Assistant. Para
+cada morador ativo é criado um dispositivo Home Assistant com entidades
+estáveis de peso, IMC e sua classificação, tendência, variações de 7/30/90 dias,
+variação em kg e percentual desde o início, média, mediana, mínimo, máximo,
+frequência e quantidade de pesagens, meta, progresso da meta e metabolismo
+basal estimado. O estado compartilhado é somente o resumo do morador; não são
+criadas entidades de balança, Bluetooth, API, fila ou pendências por esse
+mecanismo.
+
+As entidades aparecem no registro do Home Assistant depois que o broker recebe
+o Discovery. Para compartilhar com Alexa ou HomeKit, ainda é necessário
+expor/selecionar essas entidades nas configurações da integração Alexa ou
+Apple Home; o App não altera essa política de privacidade automaticamente.
+O diagnóstico do App informa se o MQTT está conectado, quantas entidades
+foram publicadas e quando ocorreu a última sincronização.
 
 ## Configuração da entidade
 
@@ -94,6 +114,7 @@ Peso é `measured`. IMC, alterações, médias, medianas, tendência e progresso
 `calculated`. Mifflin–St Jeor para adultos é `estimated` e explicitamente não é
 uma medição da balança. Para menores, não são aplicadas faixas adultas de IMC.
 Campos de bioimpedância permanecem `NULL` até existirem dados reais.
+Os estados MQTT preservam essas origens no atributo `metric_origins`.
 
 ## Testes
 
