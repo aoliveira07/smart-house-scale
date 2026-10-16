@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.0 — cartões de moradores e avatares persistentes
+
+- Mostra os moradores cadastrados imediatamente no início da tela Usuários.
+- Adiciona cartões expansíveis na Visão geral com peso, meta, IMC, variação e
+  tendência, sempre identificando a origem do indicador.
+- Permite enviar um avatar pela interface; a imagem fica no armazenamento
+  persistente local do Add-on e não é publicada no repositório.
+- Mantém avatar, lista e cadastro compatíveis com instalações existentes.
+
 ## 0.3.0 — instalação automatizada do componente Home Assistant
 
 - Inclui a integração `smart_house_scale` na imagem do App.

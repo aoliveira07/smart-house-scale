@@ -37,6 +37,11 @@ personalizado do HACS para usar a interface.
 7. Cadastre moradores pela interface e informe altura, peso inicial e, quando
    necessário para o metabolismo basal, sexo biológico.
 
+Na Visão geral, cada morador aparece em um cartão expansível com peso, meta,
+IMC, variação e tendência. A tela Usuários começa pela lista de cadastros antes
+do formulário. Avatares podem ser enviados pela própria interface; as imagens
+ficam no volume persistente local do App e não são publicadas no GitHub.
+
 O App é o painel e o proxy autenticado para a API central. Ele não cria banco
 local, não acessa PostgreSQL e não executa scanner Bluetooth paralelo.
 
