@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Smart House Scale</title><link rel="stylesheet" href="static/style.css?v=0.4.7"><link rel="stylesheet" href="static/style.extra.css?v=0.4.7">
+<title>Smart House Scale</title><link rel="stylesheet" href="static/style.css?v=0.5.0"><link rel="stylesheet" href="static/style.extra.css?v=0.5.0">
 </head>
 <body>
 <main class="app-shell">
@@ -10,7 +10,7 @@
     <div class="brand"><div class="brand-mark">⌂</div><div><div class="brand-kicker">SMART HOUSE · SH-SCALE</div><h1>Smart House Scale</h1><p>Pesagens locais, histórico persistente e atribuição segura.</p></div></div>
     <div class="version-chip"><span>V1</span><strong>homologação</strong></div>
   </header>
-  <nav class="main-nav"><button class="nav-item active" data-tab="dashboard">Visão geral</button><button class="nav-item" data-tab="users">Usuários</button><button class="nav-item" data-tab="pending">Pendências <b id="pending-badge">0</b></button><button class="nav-item" data-tab="diagnostics">Diagnóstico</button></nav>
+  <nav class="main-nav"><button class="nav-item active" data-tab="dashboard">Visão geral</button><button class="nav-item" data-tab="users">Usuários</button><button class="nav-item" data-tab="pending">Pendências <b id="pending-badge">0</b></button><button class="nav-item" data-tab="diagnostics">Diagnóstico</button><button class="nav-item" data-tab="configuration">Configuração</button></nav>
   <section id="dashboard" class="panel active">
     <div class="page-heading"><div><div class="section-kicker">VISÃO GERAL</div><h2>Saúde da casa</h2><p>O peso só entra no histórico depois de estabilizado e atribuído.</p></div><button class="button secondary" id="refresh">Atualizar</button></div>
     <div class="section-heading"><div><div class="section-kicker">HISTÓRICO PESSOAL</div><h2>Moradores da casa</h2><p class="section-help">Veja primeiro o peso, a evolução e os indicadores de cada pessoa.</p></div><span class="count-label" id="user-count">—</span></div>
@@ -31,6 +31,7 @@
   <section id="detail" class="panel"><div class="page-heading"><div><div class="section-kicker">DETALHE DO USUÁRIO</div><h2 id="detail-title">—</h2><p id="detail-subtitle">—</p></div><button class="button secondary" data-tab="dashboard">Voltar</button></div><div id="detail-summary" class="metric-grid"></div><article class="surface-card chart-card"><div class="card-heading"><div><h3>Evolução</h3><p>Mediana diária para reduzir oscilações de curto prazo.</p></div><span class="origin-badge">peso: measured · indicadores: calculated</span></div><svg id="chart" viewBox="0 0 700 240" role="img" aria-label="Gráfico de evolução do peso"></svg></article><div id="detail-history" class="table-wrap surface-card"></div></section>
   <section id="pending" class="panel"><div class="page-heading"><div><div class="section-kicker">REVISÃO NECESSÁRIA</div><h2>Pesagens aguardando identificação</h2><p>Essas leituras não alteram histórico, peso atual ou indicadores até uma decisão.</p></div></div><div id="pending-list" class="pending-list"></div></section>
   <section id="diagnostics" class="panel"><div class="page-heading"><div><div class="section-kicker">SUPORTE</div><h2>Diagnóstico</h2><p>Estado do backend e da última comunicação conhecida do Home Assistant.</p></div><button class="button secondary" id="download">Baixar JSON</button></div><pre id="diagnostics-json" class="diagnostics-output">Carregando…</pre></section>
+  <section id="configuration" class="panel"><div class="page-heading"><div><div class="section-kicker">ORIGEM DO PESO</div><h2>Configuração</h2><p>O App ouve uma entidade de peso do Home Assistant. O Bluetooth e a descriptografia continuam sob responsabilidade da integração nativa.</p></div><button class="button secondary" id="refresh-sensors">Atualizar sensores</button></div><div id="configuration-card"></div></section>
   <footer class="app-footer"><span>Smart House Scale · integração local</span><span>origens: measured · calculated · estimated</span></footer>
-</main><div id="toast" class="toast" role="status"></div><script src="static/app.js?v=0.4.7"></script>
+</main><div id="toast" class="toast" role="status"></div><script src="static/app.js?v=0.5.0"></script>
 </body></html>

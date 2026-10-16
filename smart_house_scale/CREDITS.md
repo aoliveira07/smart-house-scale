@@ -1,8 +1,9 @@
 # Créditos e licenças
 
-O Smart House Scale não incorpora o scanner BLE dos projetos abaixo. O parser
-local é uma implementação independente dos layouts públicos, com créditos para
-as referências usadas na validação:
+O Smart House Scale não incorpora scanner BLE nem código HACS dos projetos
+abaixo. O App consome a entidade pronta do Bluetooth nativo do Home Assistant.
+As referências são mantidas para documentar o protocolo Xiaomi usado pela
+integração nativa e para os testes de compatibilidade:
 
 - [ermarmon/xiaomi-scale-ha](https://github.com/ermarmon/xiaomi-scale-ha), MIT,
   copyright 2020 lolouk44 / 2024 ermarmon. A documentação confirma o uso do

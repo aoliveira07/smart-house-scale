@@ -1,7 +1,7 @@
 name: "Smart House Scale"
 slug: "smart-house-scale"
 description: "Aplicativo Smart House para administrar a balança Xiaomi, usuários, histórico e pendências."
-version: "0.4.7"
+version: "0.5.0"
 stage: experimental
 startup: application
 boot: auto
@@ -17,16 +17,8 @@ host_network: true
 image: ghcr.io/aoliveira07/home-assistant-smart-house-scale
 init: false
 
-# The App bundles the reviewed custom integration and bootstraps it into the
-# Home Assistant config on first start.  This removes the manual HACS step for
-# new installations while preserving the normal HA custom_components layout.
-map:
-  - type: homeassistant_config
-    read_only: false
-    path: /homeassistant
-
-# Used only to request a one-time Home Assistant Core restart after the
-# integration is copied.  The App never receives PostgreSQL access.
+# The App uses the official Supervisor REST/WebSocket proxy. It does not mount
+# or modify the Home Assistant configuration directory.
 homeassistant_api: true
 
 ingress: true
@@ -38,7 +30,9 @@ watchdog: "http://[HOST]:18099/health"
 options:
   api_url: "http://192.168.0.201"
   api_token: ""
+  weight_entity_id: "sensor.casal_balanca_peso"
 
 schema:
   api_url: url
   api_token: password
+  weight_entity_id: str

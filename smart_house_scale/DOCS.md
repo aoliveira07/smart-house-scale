@@ -4,34 +4,31 @@
 
 - `api_url`: endereço HTTP do servidor Smart House, por padrão
   `http://192.168.0.201`.
-- `api_token`: token Bearer dedicado para a API central. O valor é mantido nas
-  opções protegidas do Home Assistant, não aparece no navegador e não é escrito
-  em logs pela aplicação.
+- `api_token`: token Bearer dedicado para a API central. O valor fica nas
+  opções protegidas do Home Assistant e não aparece no navegador nem nos logs.
+- `weight_entity_id`: entidade `sensor` que publica o peso. O padrão é
+  `sensor.casal_balanca_peso` e pode ser alterado pela aba Configuração.
 
 ## Rede e segurança
 
 O App expõe somente a interface Ingress e encaminha `/api/*` para o servidor
-central. O navegador nunca fala diretamente com o PostgreSQL. A API central
-continua na LAN e o token é anexado pelo proxy do App.
+central. O navegador nunca fala diretamente com PostgreSQL. O App usa a API
+oficial do Supervisor com o token de aplicação entregue pelo Home Assistant.
 
-## Bluetooth
+## Bluetooth e entidade de peso
 
-O App não faz descoberta BLE. A recepção passiva, a estabilização, a
-deduplicação e a fila offline permanecem no componente `smart_house_scale` do
-Home Assistant, usando o Bluetooth nativo ou um Bluetooth Proxy ESPHome. A
-imagem do App leva uma cópia versionada desse componente e, na primeira
-inicialização, instala-a automaticamente em
-`/homeassistant/custom_components/smart_house_scale`. O App solicita uma única
-reinicialização do Core para que o componente seja carregado.
+O App não faz descoberta BLE, não descriptografa Xiaomi e não usa HACS. A
+integração nativa do Home Assistant (ou outra integração que publique um
+sensor de peso) recebe o Bluetooth, decodifica o valor e o disponibiliza como
+entidade. O App assina `state_changed` no WebSocket `/core/websocket`, consulta
+o estado inicial pela API REST e encaminha o valor à API central.
 
-O bootstrap é idempotente: uma cópia gerenciada pelo App só é atualizada quando
-a versão muda; uma instalação existente sem o marcador do App (por exemplo,
-instalada pelo HACS) é preservada e não é sobrescrita.
+O entity ID pode ser selecionado pela interface. A escolha é preservada no
+volume `/data/settings.json`; a fila de medições offline fica no mesmo volume.
 
 ## Atualização
 
 Use o botão de atualização do App Store. A atualização do App não altera a
-migration nem o PostgreSQL central. Se o componente Bluetooth estiver sendo
-gerenciado pelo App, uma atualização com nova versão o sincroniza e solicita uma
-reinicialização única do Core. Instalações externas gerenciadas pelo HACS
-continuam sendo atualizadas pelo HACS.
+migration nem o PostgreSQL central. A entidade escolhida e a fila offline são
+mantidas no armazenamento persistente do App. Não há arquivos customizados do
+Home Assistant para sincronizar ou reiniciar.

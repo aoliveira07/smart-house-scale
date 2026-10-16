@@ -15,8 +15,8 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install backend and test dependencies
-        run: python -m pip install -r smart_house_scale/backend/requirements.txt pytest httpx python-multipart
+        run: python -m pip install -r smart_house_scale/backend/requirements.txt -r smart_house_scale/addon_requirements.txt pytest
       - name: Run tests
         run: pytest -q smart_house_scale/tests
       - name: Compile Python sources
-        run: python -m compileall -q smart_house_scale/backend smart_house_scale/custom_components smart_house_scale/addon_app smart_house_scale/tests
+        run: python -m compileall -q smart_house_scale/backend smart_house_scale/addon_app smart_house_scale/tests

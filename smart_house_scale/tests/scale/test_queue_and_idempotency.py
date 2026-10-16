@@ -5,10 +5,10 @@ from uuid import uuid4
 
 try:
     from smart_house_scale.backend.app.service import ScaleService
-    from smart_house_scale.custom_components.smart_house_scale.queue import OfflineQueue
+    from smart_house_scale.addon_app.ingestion import OfflineQueue
 except ModuleNotFoundError:
     from backend.app.service import ScaleService
-    from custom_components.smart_house_scale.queue import OfflineQueue
+    from addon_app.ingestion import OfflineQueue
 
 
 def test_offline_queue_is_durable_and_idempotent(tmp_path: Path):

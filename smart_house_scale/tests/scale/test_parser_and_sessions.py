@@ -1,78 +1,69 @@
 from datetime import UTC, datetime, timedelta
 
-try:
-    from smart_house_scale.custom_components.smart_house_scale.parser import parse_native_entity_state, parse_service_info
-    from smart_house_scale.custom_components.smart_house_scale.session import SessionAggregator
-except ModuleNotFoundError:
-    from custom_components.smart_house_scale.parser import parse_native_entity_state, parse_service_info
-    from custom_components.smart_house_scale.session import SessionAggregator
+from smart_house_scale.addon_app.ingestion import SessionAggregator, parse_weight_entity_state
 
 
-def test_xiaomi_v1_kg_and_normalized_mac():
-    # 61.30 kg * 200 = 12260 = 0x2fe4, little endian e4 2f.
-    reading = parse_service_info({"address": "aabbccddeeff", "rssi": -54, "service_data": {"181d": bytes([0x20, 0xE4, 0x2F])}})
-    assert reading is not None
-    assert reading.weight_kg == 61.3
-    assert reading.original_unit == "kg"
-    assert reading.stable is True
-    assert reading.mac_address == "AA:BB:CC:DD:EE:FF"
-
-
-def test_xiaomi_v1_native_units_are_normalized_to_kg():
-    pounds = parse_service_info({"address": "AA:BB:CC:DD:EE:FF", "service_data": {"181d": bytes([0x03, 0x10, 0x27])}})
-    jin = parse_service_info({"address": "AA:BB:CC:DD:EE:FF", "service_data": {"181d": bytes([0x12, 0x10, 0x27])}})
-    assert pounds is not None and pounds.original_unit == "lbs" and round(pounds.weight_kg, 3) == 45.359
-    assert jin is not None and jin.original_unit == "jin" and jin.weight_kg == 50.0
-
-
-def test_xiaomi_v2_has_impedance_and_requires_stable_flag():
-    # unit=kg, stable+impedance, impedance=500, weight=61.3 kg.
-    payload = bytes([0x02, 0x22, 0, 0, 0, 0, 0, 0, 0, 0xF4, 0x01, 0xE4, 0x2F])
-    reading = parse_service_info({"address": "AA:BB:CC:DD:EE:FF", "service_data": {"181b": payload}})
-    assert reading is not None
-    assert reading.weight_kg == 61.3
-    assert reading.impedance == 500
-    assert reading.stable is True
-
-
-def test_native_xiaomi_entity_state_supports_encrypted_s200():
-    reading = parse_native_entity_state(
+def test_native_xiaomi_entity_state_is_consumed_after_home_assistant_decryption():
+    reading = parse_weight_entity_state(
         {
+            "entity_id": "sensor.casal_balanca_peso",
             "state": "81.35",
-            "last_changed": datetime(2026, 10, 16, 2, 24, tzinfo=UTC),
-            "attributes": {"unit_of_measurement": "kg", "signal_strength": -61},
+            "last_changed": "2026-10-16T02:24:00Z",
+            "attributes": {
+                "unit_of_measurement": "kg",
+                "device_class": "weight",
+                "signal_strength": -61,
+                "mac_address": "d0:7b:6f:30:dc:7e",
+                "model": "MJTZC02YM",
+            },
         },
-        mac_address="d0:7b:6f:30:dc:7e",
         entity_id="sensor.casal_balanca_peso",
-        model="MJTZC02YM",
     )
     assert reading is not None
     assert reading.weight_kg == 81.35
+    assert reading.original_unit == "kg"
     assert reading.stable is True
-    assert reading.protocol == "xiaomi_ble_native"
+    assert reading.protocol == "home_assistant_entity"
     assert reading.mac_address == "D0:7B:6F:30:DC:7E"
     assert reading.rssi == -61
+    assert reading.measured_at == datetime(2026, 10, 16, 2, 24, tzinfo=UTC)
 
 
-def test_native_entity_state_ignores_unknown_values():
-    assert parse_native_entity_state(
-        {"state": "unknown", "attributes": {}},
-        mac_address="AA:BB:CC:DD:EE:FF",
-        entity_id="sensor.scale_weight",
-    ) is None
+def test_entity_units_are_normalized_to_kg_and_missing_mac_is_stable():
+    pounds = parse_weight_entity_state(
+        {"state": "180", "attributes": {"unit_of_measurement": "lb", "device_class": "weight"}},
+        entity_id="sensor.other_scale_weight",
+    )
+    grams = parse_weight_entity_state(
+        {"state": "81350", "attributes": {"unit_of_measurement": "g", "device_class": "weight"}},
+        entity_id="sensor.other_scale_weight",
+    )
+    assert pounds is not None and round(pounds.weight_kg, 3) == 81.647
+    assert grams is not None and grams.weight_kg == 81.35
+    assert pounds.mac_address == grams.mac_address
+    assert pounds.raw_payload["mac_address_source"] == "entity_id_fallback"
 
 
-def test_session_finalizes_once_and_deduplicates_broadcasts():
+def test_unknown_or_non_weight_values_are_ignored():
+    assert parse_weight_entity_state({"state": "unknown", "attributes": {}}, entity_id="sensor.scale") is None
+    assert parse_weight_entity_state({"state": "42", "attributes": {"unit_of_measurement": "%"}}, entity_id="sensor.scale") is None
+
+
+def test_session_finalizes_once_and_deduplicates_entity_changes():
     now = datetime(2026, 10, 15, tzinfo=UTC)
-    clock = lambda: now
-    aggregator = SessionAggregator(30, clock)
-    # Use a non-stable V2 frame, then a stable frame.
-    unstable = parse_service_info({"address": "AA:BB:CC:DD:EE:FF", "service_data": {"181b": bytes([2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xE4, 0x2F])}})
-    stable = parse_service_info({"address": "AA:BB:CC:DD:EE:FF", "service_data": {"181b": bytes([2, 0x20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xE4, 0x2F])}})
-    assert aggregator.ingest(unstable) is None
-    assert aggregator.ingest(stable) is not None
+    aggregator = SessionAggregator(30, lambda: now)
+    first = parse_weight_entity_state(
+        {"state": "61.3", "attributes": {"unit_of_measurement": "kg", "device_class": "weight"}},
+        entity_id="sensor.scale_weight",
+    )
+    second = parse_weight_entity_state(
+        {"state": "61.4", "attributes": {"unit_of_measurement": "kg", "device_class": "weight"}},
+        entity_id="sensor.scale_weight",
+    )
+    assert first is not None and second is not None
+    assert aggregator.ingest(first) is not None
+    assert aggregator.ingest(second) is None
     assert aggregator.last_finalized is not None
     assert aggregator.last_finalized.advertisement_count == 2
-    assert aggregator.ingest(stable) is None
     now += timedelta(seconds=31)
-    assert aggregator.ingest(stable) is not None
+    assert aggregator.ingest(second) is not None

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.5.0 — 2026-10-16
+
+- Remove o componente customizado/HACS do App e do pacote publicado.
+- Passa a ouvir diretamente uma entidade de peso configurável do Home
+  Assistant pelo WebSocket oficial do Supervisor.
+- Mantém a integração nativa Xiaomi BLE responsável por Bluetooth e
+  descriptografia, sem scanner ou credencial duplicada no App.
+- Adiciona seleção de sensor pela interface, leitura inicial via REST,
+  diagnóstico de conexão e fila offline persistente no volume do App.
+
 ## 0.4.7 — 2026-10-16
 
 - Adiciona suporte à Xiaomi Smart Scale S200 (MJTZC02YM), que transmite MiBeacon

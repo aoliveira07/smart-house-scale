@@ -1,9 +1,12 @@
-"""Ingress UI and authenticated proxy for the central Smart House API."""
+"""Smart House Scale Home Assistant App.
+
+The App is the local bridge and UI. Bluetooth discovery and Xiaomi decryption
+remain entirely in Home Assistant's native integration; this process only
+subscribes to the configured numeric weight entity.
+"""
 
 from __future__ import annotations
 
-import asyncio
-import logging
 import os
 from pathlib import Path
 from uuid import UUID
@@ -12,8 +15,11 @@ import httpx
 from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 
-from .integration_installer import IntegrationInstallResult, ensure_integration_from_environment
+from .home_assistant import HomeAssistantEntityBridge, HomeAssistantUnavailable
+from .ingestion import ScaleApiClient
+from .settings import AppSettings, InvalidEntityId
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -24,7 +30,7 @@ CENTRAL_API_URL = os.getenv("SMART_HOUSE_SCALE_API_URL", "http://192.168.0.201")
 if CENTRAL_API_URL.endswith("/api"):
     CENTRAL_API_URL = CENTRAL_API_URL[:-4]
 API_TOKEN = os.getenv("SMART_HOUSE_SCALE_API_TOKEN", "")
-_LOGGER = logging.getLogger(__name__)
+APP_VERSION = os.getenv("APP_VERSION", "0.5.0")
 _MAX_AVATAR_BYTES = 5 * 1024 * 1024
 _AVATAR_TYPES = {
     "image/png": ".png",
@@ -33,87 +39,50 @@ _AVATAR_TYPES = {
 }
 
 
-def _avatar_directory() -> Path:
-    configured = Path(os.getenv("APP_DATA_DIR", "/data")) / "avatars"
+def _data_directory() -> Path:
+    configured = Path(os.getenv("APP_DATA_DIR", "/data"))
     try:
         configured.mkdir(parents=True, exist_ok=True)
         return configured
     except OSError:
-        # Local development can run outside the App container where /data is
-        # not writable.  The add-on always uses the persistent /data path.
-        fallback = BASE_DIR / "data" / "avatars"
+        fallback = BASE_DIR / "data"
         fallback.mkdir(parents=True, exist_ok=True)
         return fallback
 
 
-AVATAR_DIR = _avatar_directory()
-_integration_status: dict[str, object] = {
-    "status": "not_started",
-    "version": None,
-    "target": None,
-    "restart_required": False,
-    "message": "A instalação automática ainda não foi executada.",
-}
-_restart_task: asyncio.Task[None] | None = None
+DATA_DIR = _data_directory()
+AVATAR_DIR = DATA_DIR / "avatars"
+AVATAR_DIR.mkdir(parents=True, exist_ok=True)
+SETTINGS = AppSettings(DATA_DIR)
+CENTRAL_API = ScaleApiClient(CENTRAL_API_URL, API_TOKEN)
+HOME_ASSISTANT = HomeAssistantEntityBridge(
+    CENTRAL_API,
+    data_dir=DATA_DIR,
+    entity_id=SETTINGS.weight_entity_id,
+    supervisor_token=os.getenv("SUPERVISOR_TOKEN", ""),
+    session_window_seconds=int(os.getenv("SMART_HOUSE_SCALE_SESSION_WINDOW", "30")),
+)
 
-app = FastAPI(title="Smart House Scale App", version=os.getenv("APP_VERSION", "0.4.7"))
+
+class WeightEntitySelection(BaseModel):
+    entity_id: str
+
+
+app = FastAPI(title="Smart House Scale App", version=APP_VERSION)
 app.mount("/static", StaticFiles(directory=WEB_DIR / "static"), name="smart-house-scale-static")
 app.mount("/avatars", StaticFiles(directory=AVATAR_DIR), name="smart-house-scale-avatars")
 
 
 @app.on_event("startup")
-async def bootstrap_home_assistant_integration() -> None:
-    """Install the native HA integration when the App is first started."""
+async def start_home_assistant_bridge() -> None:
+    """Start the Supervisor WebSocket listener and the durable queue flusher."""
 
-    global _integration_status, _restart_task
-    result: IntegrationInstallResult = await asyncio.to_thread(ensure_integration_from_environment)
-    _integration_status = result.as_dict()
-    if result.restart_required:
-        _restart_task = asyncio.create_task(_restart_home_assistant_core())
+    await HOME_ASSISTANT.start()
 
 
-async def _restart_home_assistant_core() -> None:
-    """Ask the Supervisor's Core API to reload custom_components once."""
-
-    token = os.getenv("SUPERVISOR_TOKEN", "")
-    if not token:
-        _LOGGER.warning("Integration installed; SUPERVISOR_TOKEN unavailable for automatic Core restart")
-        _integration_status.update(
-            {
-                "restart_required": True,
-                "restart_status": "manual_required",
-            }
-        )
-        return
-
-    # Let the App finish its startup and watchdog health check before asking
-    # Core to restart.  The marker written by the installer makes this a
-    # one-time action on the first start or after an App-managed update.
-    await asyncio.sleep(5)
-    try:
-        async with httpx.AsyncClient(timeout=15.0) as client:
-            response = await client.post(
-                "http://supervisor/core/api/services/homeassistant/restart",
-                headers={"Authorization": f"Bearer {token}"},
-                json={},
-            )
-            response.raise_for_status()
-    except Exception as exc:  # the integration remains installed if restart fails
-        _LOGGER.warning("Integration installed but automatic Core restart failed: %s", type(exc).__name__)
-        _integration_status.update(
-            {
-                "restart_required": True,
-                "restart_status": "restart_failed",
-            }
-        )
-        return
-
-    _integration_status.update(
-        {
-            "restart_required": False,
-            "restart_status": "requested",
-        }
-    )
+@app.on_event("shutdown")
+async def stop_home_assistant_bridge() -> None:
+    await HOME_ASSISTANT.stop()
 
 
 @app.get("/", include_in_schema=False)
@@ -128,19 +97,40 @@ async def upload_avatar(user_id: UUID, file: UploadFile = File(...)) -> dict[str
     extension = _AVATAR_TYPES.get(file.content_type or "")
     if extension is None:
         raise HTTPException(status_code=415, detail="Use PNG, JPEG ou WebP para o avatar.")
-
     payload = await file.read(_MAX_AVATAR_BYTES + 1)
     if len(payload) > _MAX_AVATAR_BYTES:
         raise HTTPException(status_code=413, detail="O avatar deve ter no máximo 5 MB.")
     if not payload:
         raise HTTPException(status_code=400, detail="O arquivo do avatar está vazio.")
-
     target = AVATAR_DIR / f"{user_id}{extension}"
     temporary = AVATAR_DIR / f".{user_id}.upload"
     temporary.write_bytes(payload)
     temporary.replace(target)
-
     return {"url": f"/avatars/{user_id}{extension}", "content_type": file.content_type or ""}
+
+
+@app.get("/configuration")
+async def configuration() -> dict[str, object]:
+    return {"configuration": SETTINGS.public(), "home_assistant": HOME_ASSISTANT.diagnostics()}
+
+
+@app.put("/configuration/weight-entity")
+async def update_weight_entity(selection: WeightEntitySelection) -> dict[str, object]:
+    try:
+        entity_id = SETTINGS.set_weight_entity(selection.entity_id)
+        await HOME_ASSISTANT.set_entity_id(entity_id)
+    except InvalidEntityId as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {"configuration": SETTINGS.public(), "home_assistant": HOME_ASSISTANT.diagnostics()}
+
+
+@app.get("/home-assistant/weight-sensors")
+async def weight_sensors() -> dict[str, object]:
+    try:
+        sensors = await HOME_ASSISTANT.list_weight_sensors()
+    except (HomeAssistantUnavailable, httpx.HTTPError) as exc:
+        raise HTTPException(status_code=503, detail="Não foi possível consultar os sensores do Home Assistant.") from exc
+    return {"items": sensors, "selected_entity_id": SETTINGS.weight_entity_id}
 
 
 @app.get("/health", include_in_schema=False)
@@ -148,8 +138,10 @@ async def health() -> dict[str, object]:
     return {
         "ok": True,
         "app": "smart_house_scale",
+        "version": APP_VERSION,
         "api_url": CENTRAL_API_URL,
-        "home_assistant_integration": _integration_status,
+        "configuration": SETTINGS.public(),
+        "home_assistant": HOME_ASSISTANT.diagnostics(),
     }
 
 
@@ -159,11 +151,7 @@ async def health() -> dict[str, object]:
     include_in_schema=False,
 )
 async def central_api_proxy(path: str, request: Request) -> Response:
-    """Forward only the Smart House API through the add-on.
-
-    The browser never receives the API token.  It stays in the add-on option
-    storage and is attached only to requests sent to the central LAN API.
-    """
+    """Forward only the Smart House API; the browser never receives its token."""
 
     target = f"{CENTRAL_API_URL}/api/{path}"
     headers = {"Accept": "application/json"}
@@ -173,10 +161,8 @@ async def central_api_proxy(path: str, request: Request) -> Response:
     if API_TOKEN:
         headers["Authorization"] = f"Bearer {API_TOKEN}"
     body = await request.body()
-
     async with httpx.AsyncClient(timeout=15.0, follow_redirects=False) as client:
         upstream = await client.request(request.method, target, content=body or None, headers=headers)
-
     response_headers = {}
     if upstream.headers.get("content-type"):
         response_headers["content-type"] = upstream.headers["content-type"]
