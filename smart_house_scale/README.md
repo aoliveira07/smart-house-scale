@@ -50,8 +50,12 @@ local, não acessa PostgreSQL e não executa scanner Bluetooth paralelo.
 
 O recebimento dos advertisements continua pertencendo ao componente nativo do
 Home Assistant, conforme a arquitetura do V1. O App não substitui o stack
-Bluetooth nem transforma a interface em um scanner independente. A imagem do
-App contém o adaptador revisado e o instala no diretório
+Bluetooth nem transforma a interface em um scanner independente. Para balanças
+Xiaomi abertas, a integração usa o callback passivo nativo; para modelos como a
+Smart Scale S200 (`MJTZC02YM`), que usam MiBeacon criptografado `FE95`, ela
+consome a entidade de peso produzida pelo `xiaomi_ble` nativo. Assim a chave
+permanece somente na configuração do Home Assistant e não é duplicada no App.
+A imagem do App contém o adaptador revisado e o instala no diretório
 `custom_components/smart_house_scale` durante o bootstrap. O App usa o mount
 `homeassistant_config` documentado pelo Supervisor apenas para essa finalidade.
 

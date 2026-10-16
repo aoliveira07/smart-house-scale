@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.7 — 2026-10-16
+
+- Adiciona suporte à Xiaomi Smart Scale S200 (MJTZC02YM), que transmite MiBeacon
+  criptografado em `FE95`.
+- Consome a entidade de peso da integração nativa `xiaomi_ble` do Home Assistant,
+  sem scanner BLE paralelo e sem duplicar bind keys.
+- Mantém a sessão, deduplicação, fila offline e envio idempotente para a API central.
+- Atualiza a integração embarcada para 0.1.7.
+
 ## 0.4.6 — 2026-10-15
 
 - Corrige o callback do dispatcher do Home Assistant que atualiza as entidades após uma medição.

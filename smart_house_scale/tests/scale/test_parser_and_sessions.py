@@ -1,10 +1,10 @@
 from datetime import UTC, datetime, timedelta
 
 try:
-    from smart_house_scale.custom_components.smart_house_scale.parser import parse_service_info
+    from smart_house_scale.custom_components.smart_house_scale.parser import parse_native_entity_state, parse_service_info
     from smart_house_scale.custom_components.smart_house_scale.session import SessionAggregator
 except ModuleNotFoundError:
-    from custom_components.smart_house_scale.parser import parse_service_info
+    from custom_components.smart_house_scale.parser import parse_native_entity_state, parse_service_info
     from custom_components.smart_house_scale.session import SessionAggregator
 
 
@@ -33,6 +33,33 @@ def test_xiaomi_v2_has_impedance_and_requires_stable_flag():
     assert reading.weight_kg == 61.3
     assert reading.impedance == 500
     assert reading.stable is True
+
+
+def test_native_xiaomi_entity_state_supports_encrypted_s200():
+    reading = parse_native_entity_state(
+        {
+            "state": "81.35",
+            "last_changed": datetime(2026, 10, 16, 2, 24, tzinfo=UTC),
+            "attributes": {"unit_of_measurement": "kg", "signal_strength": -61},
+        },
+        mac_address="d0:7b:6f:30:dc:7e",
+        entity_id="sensor.casal_balanca_peso",
+        model="MJTZC02YM",
+    )
+    assert reading is not None
+    assert reading.weight_kg == 81.35
+    assert reading.stable is True
+    assert reading.protocol == "xiaomi_ble_native"
+    assert reading.mac_address == "D0:7B:6F:30:DC:7E"
+    assert reading.rssi == -61
+
+
+def test_native_entity_state_ignores_unknown_values():
+    assert parse_native_entity_state(
+        {"state": "unknown", "attributes": {}},
+        mac_address="AA:BB:CC:DD:EE:FF",
+        entity_id="sensor.scale_weight",
+    ) is None
 
 
 def test_session_finalizes_once_and_deduplicates_broadcasts():

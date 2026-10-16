@@ -7,7 +7,7 @@ except ModuleNotFoundError:
     from addon_app.integration_installer import ensure_integration
 
 
-def _source_tree(tmp_path: Path, version: str = "0.1.5") -> Path:
+def _source_tree(tmp_path: Path, version: str = "0.1.7") -> Path:
     source = tmp_path / "source" / "smart_house_scale"
     source.mkdir(parents=True)
     (source / "manifest.json").write_text(json.dumps({"version": version}), encoding="utf-8")
@@ -30,7 +30,7 @@ def test_install_is_idempotent_and_managed_updates_are_safe(tmp_path: Path):
     assert not (target / "__pycache__").exists()
     assert json.loads((target / ".smart_house_scale_app_managed.json").read_text())[
         "integration_version"
-    ] == "0.1.5"
+    ] == "0.1.7"
 
     already = ensure_integration(config_dir=config, source_dir=source, app_version="0.3.0")
     assert already.status == "already_managed"
