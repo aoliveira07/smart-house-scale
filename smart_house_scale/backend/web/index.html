@@ -2,12 +2,12 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Tecnohead Scale</title><link rel="stylesheet" href="static/style.css?v=0.7.4"><link rel="stylesheet" href="static/style.extra.css?v=0.7.4">
+<title>Tecnohead Scale</title><link rel="stylesheet" href="static/style.css?v=0.7.5"><link rel="stylesheet" href="static/style.extra.css?v=0.7.5">
 </head>
 <body>
 <main class="app-shell">
   <header class="app-header">
-    <div class="brand"><div class="brand-mark" role="img" aria-label="Saúde">♥</div><div><div class="brand-kicker">TECNOHEAD · SCALE</div><h1>Tecnohead Scale</h1><p>Pesagens locais, histórico persistente e atribuição segura.</p></div></div>
+    <div class="brand"><div class="brand-mark"><img src="static/brand-icon.png?v=0.7.5" alt="Saúde"></div><div><div class="brand-kicker">TECNOHEAD · SCALE</div><h1>Tecnohead Scale</h1><p>Pesagens locais, histórico persistente e atribuição segura.</p></div></div>
     <div class="version-chip"><span>V1</span><strong>homologação</strong></div>
   </header>
   <nav class="main-nav"><button class="nav-item active" data-tab="dashboard">Visão geral</button><button class="nav-item" data-tab="users">Usuários</button><button class="nav-item" data-tab="pending">Pendências <b id="pending-badge">0</b></button><button class="nav-item" data-tab="diagnostics">Diagnóstico</button><button class="nav-item" data-tab="configuration">Configuração</button></nav>
@@ -29,5 +29,5 @@
   <section id="diagnostics" class="panel"><div class="page-heading"><div><div class="section-kicker">SUPORTE</div><h2>Diagnóstico</h2><p>Estado do backend e da última comunicação conhecida do Home Assistant.</p></div><button class="button secondary" id="download">Baixar JSON</button></div><pre id="diagnostics-json" class="diagnostics-output">Carregando…</pre></section>
   <section id="configuration" class="panel"><div class="page-heading"><div><div class="section-kicker">ORIGEM DO PESO</div><h2>Configuração</h2><p>O App ouve uma entidade de peso do Home Assistant. O Bluetooth e a descriptografia continuam sob responsabilidade da integração nativa.</p></div><button class="button secondary" id="refresh-sensors">Atualizar sensores</button></div><div id="configuration-card"></div></section>
   <footer class="app-footer"><span>Tecnohead Scale · integração local</span><span>origens: measured · calculated · estimated</span></footer>
-</main><div id="toast" class="toast" role="status"></div><script src="static/app.js?v=0.7.4"></script>
+</main><div id="toast" class="toast" role="status"></div><script src="static/app.js?v=0.7.5"></script>
 </body></html>

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.5 — 2026-10-16
+
+- Adiciona o ícone de saúde enviado ao App e aos cartões do Supervisor.
+- Usa o símbolo de coração com sinal de saúde no painel lateral.
+- Mantém a identidade visual do ícone no cabeçalho da interface.
+
 ## 0.7.4 — 2026-10-16
 
 - Mantém o cadastro de novos usuários fechado por padrão.
